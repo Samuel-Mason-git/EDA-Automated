@@ -1,7 +1,7 @@
 from data_quality import load_dataframe, data_quality_check, overview, data_quality_recommendations
 from maintenance import convert_numpy, wipe_all_files_in_folder
 from scheduler import periodic_cleanup
-from update_csv import init_csv_log, log_upload_csv
+from db import log_upload, save_feedback
 from flask import Flask, render_template, request, session, redirect, url_for
 from flask_session import Session
 import json
@@ -11,7 +11,6 @@ import tempfile
 import os
 import time
 from waitress import serve
-import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 import psycopg2
@@ -19,7 +18,6 @@ import psycopg2
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 DATABASE_URL = os.getenv("DATABASE_URL")
-conn = psycopg2.connect(DATABASE_URL)
 
 flask_files_route = os.path.join(os.getcwd(), 'flask_files')
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -30,7 +28,6 @@ max_file_size = 200 * 1024 * 1024
 Session(app)
 PERSISTENT_DIR = os.path.join(os.getcwd(), 'persistent_storage')
 os.makedirs(PERSISTENT_DIR, exist_ok=True)
-init_csv_log()
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 scheduler = BackgroundScheduler()
@@ -93,7 +90,8 @@ def upload_file():
                 print(f"  {k}: {v:.2f} sec")
 
             session['upload_complete'] = True
-            log_upload_csv(file.filename, file_size_mb, duration)
+            log_upload(file.filename, file_size_mb, duration)
+
             session['uploaded_file'] = file_path
             return redirect(url_for('index'))
         else:
@@ -141,25 +139,18 @@ def clear_dataset():
 
 @app.route('/submit-review', methods=['POST'])
 def submit_review():
-    import csv
-    import os
-    from datetime import datetime
-
     data = request.get_json()
     feedback = data.get('feedback_text', '').strip()
     rating = data.get('rating', '').strip()
-    timestamp = datetime.now().isoformat()
-    review_file = os.path.join(PERSISTENT_DIR, 'feedback_reviews.csv')
 
     if feedback and rating:
-        file_exists = os.path.isfile(review_file)
-        with open(review_file, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            if not file_exists:
-                writer.writerow(['timestamp', 'rating', 'feedback'])
-            writer.writerow([timestamp, rating, feedback])
-            print("✅ Added Review Successfully.")
-        return {'status': 'success'}, 200
+        try:
+            save_feedback(rating, feedback)  # 👈 write to Supabase
+            print("✅ Review saved to Supabase.")
+            return {'status': 'success'}, 200
+        except Exception as e:
+            print("❌ Failed to save review:", e)
+            return {'status': 'error', 'message': 'Failed to save review'}, 500
     else:
         return {'status': 'error', 'message': 'Missing fields'}, 400
 
