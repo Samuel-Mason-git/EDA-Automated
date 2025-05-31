@@ -38,31 +38,39 @@
 </head>
 <body>
 {% if not hide_navbar %}
-<nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
-  <div class="container d-flex justify-content-between align-items-center w-100">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+  <div class="container">
 
-    <!-- Centered Nav Links -->
-    <div class="mx-auto d-flex justify-content-center">
-      <a class="navbar-brand mx-3 text-light fw-semibold fs-5" href="/overview">📊 Dataset Overview</a>
-      <a class="navbar-brand mx-3 text-light fw-semibold fs-5" href="/datatype-analysis">📂 Data Statistics</a>
-      <a class="navbar-brand mx-3 text-light fw-semibold fs-5" href="/data-quality-checklist">📋 EDA Checklist</a>
+    <!-- Brand / Toggle Button (visible on mobile) -->
+    <a class="navbar-brand fw-semibold" href="/">EDA App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+      aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Collapsible Section -->
+    <div class="collapse navbar-collapse justify-content-center" id="mainNavbar">
+
+      <!-- Centered Nav Links -->
+      <div class="navbar-nav mx-auto text-center">
+        <a class="nav-link text-light fw-semibold" href="/overview">📊 Dataset Overview</a>
+        <a class="nav-link text-light fw-semibold" href="/datatype-analysis">📂 Data Statistics</a>
+        <a class="nav-link text-light fw-semibold" href="/data-quality-checklist">📋 EDA Checklist</a>
+      </div>
+
+      <!-- Right-aligned Action Buttons -->
+      {% if session.get('upload_complete') %}
+      <div class="d-flex align-items-center mt-3 mt-lg-0" style="gap: 10px;">
+        <a href="#" class="btn btn-outline-light btn-sm fw-semibold shadow-sm" onclick="confirmClear()">
+          🔄 Reset
+        </a>
+        <button class="btn btn-light btn-sm fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+          💬 Review
+        </button>
+      </div>
+      {% endif %}
+
     </div>
-
-    <!-- Right-aligned Action Buttons -->
-    {% if session.get('upload_complete') %}
-    <div class="d-flex align-items-center" style="gap: 10px; position: absolute; right: 30px;">
-      <a href="#" 
-         class="btn btn-outline-light btn-sm fw-semibold shadow-sm" 
-         onclick="confirmClear()">
-        🔄 Reset
-      </a>
-      <button class="btn btn-light btn-sm fw-semibold shadow-sm" 
-              data-toggle="modal" data-target="#feedbackModal">
-        💬 Review
-      </button>
-    </div>
-    {% endif %}
-
   </div>
 </nav>
 {% endif %}
