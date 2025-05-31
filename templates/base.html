@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}My Dataset App{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1 0 auto;
+    }
+
+    footer {
+      flex-shrink: 0;
+      margin-top: 50px;
+    }
+  </style>
+  <script>
+
+    function confirmClear() {
+    const confirmed = confirm("Are you sure you want to clear the uploaded dataset and return to the upload page?");
+      if (confirmed) {
+        window.location.href = "/clear";
+      }
+    }
+  </script>
+
+</head>
+<body>
+{% if not hide_navbar %}
+<nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
+  <div class="container d-flex justify-content-between align-items-center w-100">
+
+    <!-- Centered Nav Links -->
+    <div class="mx-auto d-flex justify-content-center">
+      <a class="navbar-brand mx-3 text-light fw-semibold fs-5" href="/overview">📊 Dataset Overview</a>
+      <a class="navbar-brand mx-3 text-light fw-semibold fs-5" href="/datatype-analysis">📂 Data Statistics</a>
+      <a class="navbar-brand mx-3 text-light fw-semibold fs-5" href="/data-quality-checklist">📋 EDA Checklist</a>
+    </div>
+
+    <!-- Right-aligned Action Buttons -->
+    {% if session.get('upload_complete') %}
+    <div class="d-flex align-items-center" style="gap: 10px; position: absolute; right: 30px;">
+      <a href="#" 
+         class="btn btn-outline-light btn-sm fw-semibold shadow-sm" 
+         onclick="confirmClear()">
+        🔄 Reset
+      </a>
+      <button class="btn btn-light btn-sm fw-semibold shadow-sm" 
+              data-toggle="modal" data-target="#feedbackModal">
+        💬 Review
+      </button>
+    </div>
+    {% endif %}
+
+  </div>
+</nav>
+{% endif %}
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="bg-light border-top py-3 mt-5">
+    <div class="container text-center small text-muted">
+      <span>© {{ year }} EDA Automated. Built for better data decisions.</span>
+    </div>
+  </footer>
+
+   <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content shadow">
+        <div class="modal-header">
+          <h5 class="modal-title" id="feedbackModalLabel">📝 Leave a Review</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div id="feedback-form">
+            <div class="form-group">
+              <label for="feedback_text">Your thoughts:</label>
+              <textarea class="form-control" id="feedback_text" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Rating:</label><br>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="rating" id="positive" value="positive" required>
+                <label class="form-check-label" for="positive">😊 Positive</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="rating" id="neutral" value="neutral">
+                <label class="form-check-label" for="neutral">😐 Neutral</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="rating" id="negative" value="negative">
+                <label class="form-check-label" for="negative">😞 Negative</label>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="submit-feedback">Submit</button>
+          </div>
+
+          <div id="thank-you-message" class="text-center d-none">
+            <div class="alert alert-info text-center py-2 mb-0" role="alert">
+              🎉 Thanks for your feedback!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Replace slim jQuery with full version -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <script>
+    $(document).ready(function() {
+      $('#submit-feedback').on('click', function() {
+        const feedbackText = $('#feedback_text').val().trim();
+        const rating = $('input[name="rating"]:checked').val();
+
+        if (!feedbackText || !rating) {
+          alert("Please enter your feedback and select a rating.");
+          return;
+        }
+
+        $.ajax({
+          type: 'POST',
+          url: '/submit-review',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            feedback_text: feedbackText,
+            rating: rating
+          }),
+          success: function(response) {
+            $('#feedback-form').addClass('d-none');
+            $('#thank-you-message').removeClass('d-none');
+            setTimeout(() => {
+              $('#feedbackModal').modal('hide');
+              $('#feedback-form').removeClass('d-none');
+              $('#thank-you-message').addClass('d-none');
+              $('#feedback_text').val('');
+              $('input[name="rating"]').prop('checked', false);
+            }, 2000);
+          },
+          error: function() {
+            alert("⚠️ Something went wrong. Please try again.");
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+timestamp,filename,file_size_mb,processing_duration_sec,ip,user_agent
+2025-05-31T15:41:49.061625,sample_with_vif - Copy.csv,0.0,0.29,127.0.0.1,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+2025-05-31T15:45:58.647576,forestfires.csv,0.03,3.52,127.0.0.1,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"

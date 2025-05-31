@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Dataset{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center pt-5 pb-5" style="padding-top: 15vh;">
+  <div class="col-md-10 col-lg-8 col-xl-6">
+
+    <!-- Upload Form Container -->
+    <div id="upload-form-container">
+
+      <!-- Privacy Notice -->
+      <div class="alert shadow-sm px-4 py-4 mb-4 rounded-3 border-0" style="background-color: #f1f6fc; border-left: 5px solid #0d6efd;">
+        <div class="d-flex flex-column">
+          <div class="d-flex align-items-center mb-2">
+            <span class="fs-5 me-2 text-primary">🔒</span>
+            <h6 class="mb-0 fw-semibold text-dark">Privacy First</h6>
+          </div>
+          <div class="text-secondary small lh-lg ps-1">
+            <div>Your file is processed entirely in memory and never stored.</div>
+            <div>All data is cleared automatically after analysis.</div>
+            <div>We use dynamic rendering — nothing is saved to disk or database.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Card -->
+      <div class="card shadow-lg border-0 rounded-4 bg-light">
+        <div class="card-body p-5">
+          <h2 class="text-center mb-3 display-5">📁 Upload Your Dataset</h2>
+
+          <!-- File types line, cleaner -->
+          <p class="text-center text-muted mb-4" style="font-size: 1rem;">
+            Supported formats:
+            <span class="text-danger fw-semibold">.csv</span>,
+            <span class="text-danger fw-semibold">.xlsx</span>,
+            <span class="text-danger fw-semibold">.xls</span>,
+            <span class="text-danger fw-semibold">.json</span>,
+            <span class="text-danger fw-semibold">.feather</span>
+          </p>
+
+          <form method="POST" enctype="multipart/form-data" id="upload-form" onsubmit="showLoading(); this.querySelector('button[type=submit]').disabled = true;">
+            <!-- Redesigned File Input -->
+            <div class="mb-4">
+              <label for="file" class="form-label fw-semibold">Choose a file</label>
+              <div class="custom-file-upload w-100">
+                <input type="file" name="file" id="file" class="form-control visually-hidden" accept=".csv,.xlsx,.xls,.json,.feather" required>
+                <label for="file" class="file-label d-flex align-items-center justify-content-between px-4 py-2 rounded border border-2 shadow-sm">
+                  <span id="file-name" class="text-muted">No file chosen</span>
+                  <span class="btn btn-sm btn-outline-primary px-3">Choose file</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">
+              🚀 Upload & Analyse
+            </button>
+
+            <small class="form-text text-center d-block mt-3 text-muted">
+              Max file size:
+              <span class="fw-bold text-dark fst-italic">
+                {{ (max_file_size / (1024 * 1024)) | round(0) }}MB
+              </span>
+            </small>
+          </form>
+        </div>
+      </div>
+
+      <!-- How It Works Section -->
+      <div class="card mt-5 shadow-sm border-0">
+        <div class="card-body p-4 bg-white rounded-4">
+          <h4 class="fw-bold mb-3">🧠 How It Works</h4>
+          <p class="text-muted mb-3">
+            This app runs a full data profiling and quality audit using statistical methods — all locally in your browser session. No code, no setup, just results.
+          </p>
+        
+          <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item bg-light">
+              📋 <strong>Comprehensive Column Classification</strong><br>
+              Columns are automatically categorised into numeric, boolean, categorical, datetime, or timeseries types. Timeseries checks include monotonicity and time span detection.
+            </li>
+            <li class="list-group-item bg-light">
+              📊 <strong>Descriptive Statistics</strong><br>
+              For every numeric column, we compute <code>mean</code>, <code>standard deviation</code>, <code>min</code>, <code>max</code>, <code>variance</code>, <code>skewness</code>, and <code>kurtosis</code>. Outliers are detected using Z-scores with thresholds at 3σ, 4σ, and 5σ.
+            </li>
+            <li class="list-group-item bg-light">
+              📈 <strong>Distribution Diagnostics</strong><br>
+              Skewed columns are flagged and classified (moderate or severe). You'll get transformation suggestions like log, Box-Cox, and Yeo-Johnson — with histograms for visual inspection.
+            </li>
+            <li class="list-group-item bg-light">
+              🚨 <strong>Outlier Detection & Visualisation</strong><br>
+              Outliers are split by severity level and shown with plots. This helps identify influential points or data errors before they affect your models.
+            </li>
+            <li class="list-group-item bg-light">
+              🧪 <strong>Data Quality Audit</strong><br>
+              The app automatically checks for:
+              <ul class="small ps-3 mb-0">
+                <li>✔️ Missing data (0–29% or 30%+ severity)</li>
+                <li>✔️ Fully null columns</li>
+                <li>✔️ Duplicate rows</li>
+                <li>✔️ Constant and low-variance columns (including categorical and boolean)</li>
+                <li>✔️ High and medium cardinality features</li>
+                <li>✔️ Imbalanced boolean features (over 70% one class)</li>
+              </ul>
+            </li>
+            <li class="list-group-item bg-light">
+              🔗 <strong>Correlation Analysis</strong><br>
+              Computes Pearson correlation for numeric features and Cramér’s V for categoricals. Visualises numeric correlation heatmaps and flags highly collinear pairs.
+            </li>
+            <li class="list-group-item bg-light">
+              🧮 <strong>Multicollinearity Detection (VIF)</strong><br>
+              Applies preprocessing (null filtering, constant drop, imputation), then calculates Variance Inflation Factors. Warns about numeric features with VIF > 5 or 10.
+            </li>
+            <li class="list-group-item bg-light">
+              💡 <strong>Actionable Insights</strong><br>
+              Recommendations are shown for each issue — complete with example code, severity badges, and justifications so you can clean data efficiently.
+            </li>
+          </ul>
+        
+          <p class="small text-muted mt-3">
+            🔐 All data stays in memory — nothing is stored or shared. This is a fully stateless, secure analysis workflow.
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="d-none text-center py-5">
+      <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden"></span>
+      </div>
+      <p class="lead fw-semibold">Processing your dataset... ⏳</p>
+      <p class="text-muted small" id="eta-text"></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Optional Hover Effect -->
+<style>
+  .card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  /* Optional styling for file input */
+  input[type="file"].form-control {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+  }
+
+  input[type="file"].form-control::file-selector-button {
+    font-weight: 500;
+    color: white;
+    background-color: #0d6efd;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.375rem 1rem;
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  input[type="file"].form-control::file-selector-button:hover {
+    background-color: #0b5ed7;
+  }
+
+  .custom-file-upload .file-label {
+    cursor: pointer;
+    background-color: #fff;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .custom-file-upload .file-label:hover {
+    background-color: #f8f9fa;
+    border-color: #0d6efd;
+  }
+
+  .custom-file-upload input[type="file"] {
+    display: none;
+  }
+</style>
+
+<!-- JavaScript Logic -->
+<script>
+  const MAX_FILE_SIZE_BYTES = {{ max_file_size }};
+  const MAX_FILE_SIZE_MB = MAX_FILE_SIZE_BYTES / (1024 * 1024);
+
+  function showLoading(file) {
+    if (file) {
+      const fileSizeMB = file.size / (1024 * 1024);
+      const processingSpeedMBps = 0.59;  // Conservative estimate
+      const etaSeconds = Math.max(5, Math.ceil(fileSizeMB / processingSpeedMBps) + 60);
+      document.getElementById('eta-text').textContent = `Estimated time to process: ~${etaSeconds} second${etaSeconds !== 1 ? 's' : ''}`;
+    }
+
+    document.getElementById('upload-form-container').style.display = 'none';
+    document.getElementById('loading-screen').classList.remove('d-none');
+  }
+
+  document.getElementById("upload-form").addEventListener("submit", function (e) {
+    const fileInput = document.getElementById("file");
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      e.preventDefault();
+      alert(`❌ File too large! Max allowed: ${MAX_FILE_SIZE_MB}MB\nYour file: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+      return false;
+    }
+
+    // ✅ Only show loading screen if size is OK
+    showLoading(file);
+    this.querySelector('button[type=submit]').disabled = true;
+  });
+
+  document.getElementById("file").addEventListener("change", function () {
+  const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+  document.getElementById("file-name").textContent = fileName;
+  });
+</script>
+{% endblock %}

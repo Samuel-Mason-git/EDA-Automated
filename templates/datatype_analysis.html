@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Type Analysis{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Title -->
+  <div class="mb-4 pb-2 border-bottom">
+    <h1 class="display-5 fw-bold d-flex align-items-center">
+      <i class="bi bi-bar-chart-line-fill text-primary me-2"></i>&nbsp;Data Type Analysis
+    </h1>
+    <p class="text-muted">Explore detailed statistical breakdowns by data type — including outliers, skewness, category counts, and more.</p>
+  </div>
+
+  <!-- DTYPE LOOP -->
+  {% for dtype, dtype_info in data_quality.items() %}
+  <section class="mb-5" id="section-{{ dtype }}">
+    <h4 class="mb-3 text-uppercase fw-bold">
+      <i class="bi bi-box text-secondary me-2"></i>&nbsp;{{ dtype }} — {{ dtype_info.count }} column{{ 's' if dtype_info.count != 1 else '' }}
+    </h4>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-bottom-0">
+        <button class="btn btn-outline-secondary w-100 text-start fw-semibold rounded-pill shadow-sm d-flex justify-content-between align-items-center"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapse{{ dtype }}"
+                aria-expanded="false"
+                aria-controls="collapse{{ dtype }}">
+          <span>📊 Show/Hide Detailed Information</span>
+          <i class="bi bi-chevron-down"></i>
+        </button>
+      </div>
+      <div id="collapse{{ dtype }}" class="collapse">
+        <div class="card-body bg-light rounded-bottom px-3 py-4">
+
+          <ul class="list-group list-group-flush">
+            {% for col_name, stats in dtype_info.columns.items() %}
+            <li class="list-group-item bg-white rounded shadow-sm mb-3 px-3 py-3">
+              <h6 class="mb-3 fw-semibold text-dark">
+                <i class="bi bi-card-list text-muted me-2"></i>&nbsp;{{ col_name | upper }}
+              </h6>
+              <ul class="list-unstyled ms-3 small">
+                {% for stat_name, stat_value in stats.items() %}
+                  {% if stat_value is not none %}
+                  <li class="mb-2">
+                    <strong class="text-capitalize">{{ stat_name | replace('_', ' ') | upper }}:</strong>
+
+                    <!-- Numeric Stats -->
+                    {% if stat_name in ['mean', 'std', 'min', 'max', 'skewness', 'kurtosis', 'population_variance'] %}
+                      {% if stat_value is number %}
+                        {{ stat_value | round(3) }}
+                      {% elif stat_value == 'NaN' %}
+                        NaN
+                      {% else %}
+                        {{ stat_value }}
+                      {% endif %}
+
+                    <!-- Outliers -->
+                    {% elif stat_name == 'outliers' %}
+                      <ul class="ms-3 mb-2">
+                        {% for threshold, count in stat_value.items() %}
+                          <li>{{ threshold }}: {{ count }}</li>
+                        {% endfor %}
+                      </ul>
+
+                    <!-- Category Counts -->
+                    {% elif stat_name == 'category_counts' %}
+                      <ul class="ms-3 mb-2">
+                        {% set top_items = stat_value.items() | list %}
+                        {% for category, count in top_items[:10] %}
+                          <li>{{ category }}: {{ count }}</li>
+                        {% endfor %}
+                        {% if stat_value|length > 10 %}
+                          <li><em>... {{ stat_value|length - 10 }} more categories not shown</em></li>
+                        {% endif %}
+                      </ul>
+
+                    <!-- Unique Categories -->
+                    {% elif stat_name == 'unique_categories' %}
+                      <ul class="ms-3 mb-2">
+                        {% for category in stat_value %}
+                          <li>{{ category }}</li>
+                        {% endfor %}
+                      </ul>
+
+                    <!-- Generic -->
+                    {% else %}
+                      {{ stat_value }}
+                    {% endif %}
+                  </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </li>
+            {% endfor %}
+          </ul>
+
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endfor %}
+
+  <!-- CTA -->
+  <div class="card border-0 shadow-sm mt-5 bg-light p-4">
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
+      <div class="mb-3 mb-md-0">
+        <h5 class="fw-bold mb-1">Final Step: Run the Data Quality Checklist</h5>
+        <p class="text-muted mb-0">
+          Validate your data from A–Z with automated checks and smart recommendations.
+        </p>
+      </div>
+      <a href="{{ url_for('data_quality_checklist') }}" class="btn btn-success btn-lg rounded-pill d-inline-flex align-items-center gap-2 shadow-sm">
+        ✅ Start the Checklist
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

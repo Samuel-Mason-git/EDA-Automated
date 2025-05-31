@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Dataset Overview{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="mb-4 pb-2 border-bottom">
+    <h1 class="display-5 fw-bold mb-1">
+      <i class="bi bi-layout-text-sidebar text-primary me-2"></i>&nbsp;Dataset Overview
+    </h1>
+    <p class="text-muted">A concise summary of your uploaded dataset — structure, types, insights, and sample rows at a glance.</p>
+  </div>
+
+  <!-- Section: Basic Info -->
+  <section class="mb-5" id="basic-info">
+    <h3 class="mb-3">🧾&nbsp;Basic Info</h3>
+    <div class="row row-cols-1 row-cols-md-2 g-3">
+      <div class="col"><div class="border rounded p-3 shadow-sm bg-light"><strong>📐 Shape:</strong> {{ overview.dataframe_shape[0] }} rows × {{ overview.dataframe_shape[1] }} columns</div></div>
+      <div class="col"><div class="border rounded p-3 shadow-sm bg-light"><strong>🔢 Total Columns:</strong> {{ overview.total_columns }}</div></div>
+      <div class="col"><div class="border rounded p-3 shadow-sm bg-light"><strong>📄 Duplicate Rows:</strong> {{ overview.duplicate_count }}</div></div>
+      <div class="col"><div class="border rounded p-3 shadow-sm bg-light"><strong>⚠️ Missing Values:</strong> {{ overview.missing }}</div></div>
+      <div class="col"><div class="border rounded p-3 shadow-sm bg-light"><strong>📌 Constant Columns:</strong> {{ overview.constant_columns_count }}</div></div>
+      <div class="col"><div class="border rounded p-3 shadow-sm bg-light"><strong>📊 Outliers &gt; 3σ:</strong> {{ overview.total_outliers_3sigma }}</div></div>
+      {% set skew_min = overview.skewness_range[0] %}
+      {% set skew_max = overview.skewness_range[1] %}
+      <div class="col">
+        <div class="border rounded p-3 shadow-sm bg-light">
+          <strong>📈 Skewness Range:</strong>
+          {% if skew_min is not none and skew_max is not none %}
+            {{ skew_min | round(2) }} to {{ skew_max | round(2) }}
+          {% else %}
+            <em>No numeric columns</em>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Data Type Counts -->
+  <section class="mb-5" id="data-type-counts">
+    <h4 class="mb-3">📦&nbsp;Data Type Counts</h4>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for dtype, count in overview.dtype_counts.items() %}
+      <div class="col">
+        <div class="d-flex justify-content-between align-items-center border rounded p-3 shadow-sm bg-white">
+          <span class="fw-semibold text-capitalize">{{ dtype }}</span>
+          <span class="badge bg-primary text-white rounded-pill px-3 py-2 fs-6">{{ count }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Section: Preview -->
+  <section class="mb-5" id="preview-head">
+    <h4 class="mb-3">🔍&nbsp;Preview (Head)</h4>
+    <div class="table-responsive border rounded shadow-sm bg-white">
+      <table class="table table-sm table-hover align-middle mb-0">
+        <thead class="table-light text-dark border-bottom">
+          <tr>
+            {% for col in overview.head[0].keys() %}
+            <th class="text-nowrap text-uppercase small fw-bold">{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in overview.head %}
+          <tr>
+            {% for value in row.values() %}
+            <td class="text-nowrap small">{{ value }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Macro: Collapsible Section -->
+{% macro collapsible_section(title, id, items, heading=None) %}
+<section class="mb-5" id="{{ id }}-section">
+  {% if heading %}
+  <h4 class="mb-3">
+    <i class="bi bi-columns text-warning me-2"></i>{{ heading }}
+  </h4>
+  {% endif %}
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-bottom-0">
+      <button class="btn btn-outline-secondary w-100 text-start fw-semibold rounded-pill shadow-sm d-flex align-items-center justify-content-between"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#{{ id }}"
+              aria-expanded="false"
+              aria-controls="{{ id }}">
+        <span>{{ title }}</span>
+        <i class="bi bi-chevron-down"></i>
+      </button>
+    </div>
+    <div id="{{ id }}" class="collapse">
+      <div class="card-body bg-light rounded-bottom px-3 py-3">
+        {% if items %}
+        <ul class="list-group list-group-flush">
+          {% for item in items %}
+          <li class="list-group-item bg-white border rounded mb-2 px-3 py-2 shadow-sm">
+            <span class="fw-medium fs-6">{{ item }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted fst-italic">No items to display.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endmacro %}
+
+  <!-- Column Names -->
+  {{ collapsible_section("Show/Hide Column Names", "collapseColumns", overview.column_names, " Column Names") }}
+
+<div class="card border-0 shadow-sm mt-5 bg-light p-4">
+  <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
+    <div class="mb-3 mb-md-0">
+      <h5 class="fw-bold mb-1">Next Step: Data Type Analysis</h5>
+      <p class="text-muted mb-0">
+        Explore detailed statistics for every column — mean, skew, outliers, categories, and more.
+      </p>
+    </div>
+    <a href="{{ url_for('datatype_analysis') }}" class="btn btn-primary btn-lg rounded-pill d-inline-flex align-items-center gap-2 shadow-sm">
+      🔎 Dive Into Stats
+    </a>
+  </div>
+</div>
+{% endblock %}
