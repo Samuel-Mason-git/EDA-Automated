@@ -14,9 +14,12 @@ from waitress import serve
 import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+import psycopg2
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
+DATABASE_URL = os.getenv("DATABASE_URL")
+conn = psycopg2.connect(DATABASE_URL)
 
 flask_files_route = os.path.join(os.getcwd(), 'flask_files')
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -169,3 +172,6 @@ if __name__ == '__main__':
     serve(app, host='127.0.0.1', port=8000, max_request_body_size=10 * 1024 * 1024 * 1024)
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
