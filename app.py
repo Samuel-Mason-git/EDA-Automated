@@ -26,8 +26,6 @@ os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024
 max_file_size = 200 * 1024 * 1024
 Session(app)
-PERSISTENT_DIR = os.path.join(os.getcwd(), 'persistent_storage')
-os.makedirs(PERSISTENT_DIR, exist_ok=True)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 scheduler = BackgroundScheduler()

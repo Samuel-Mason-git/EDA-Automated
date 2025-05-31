@@ -18,6 +18,7 @@ def log_upload(filename, size_mb, duration_sec):
                     request.remote_addr,
                     request.headers.get('User-Agent')
                 ))
+                print("✅ Upload logged to Supabase")
     except Exception as e:
         print("Upload logging failed:", e)
 
@@ -29,5 +30,6 @@ def save_feedback(rating, feedback):
                     INSERT INTO feedback_reviews (rating, feedback)
                     VALUES (%s, %s)
                 """, (rating, feedback))
+                print("✅ Upload logged to Supabase")
     except Exception as e:
         print("Feedback logging failed:", e)
