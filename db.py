@@ -1,10 +1,12 @@
 import os
 import psycopg2
 from flask import request
+import logging 
 
 DATABASE_URL = os.environ['DATABASE_URL']
 
 def log_upload(filename, size_mb, duration_sec):
+    logging.basicConfig(level=logging.INFO)
     try:
         with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as cur:
@@ -19,8 +21,10 @@ def log_upload(filename, size_mb, duration_sec):
                     request.headers.get('User-Agent')
                 ))
                 print("✅ Upload logged to Supabase")
+                logging.info("✅ Upload sent to Supabase")
     except Exception as e:
         print("Upload logging failed:", e)
+        logging.error(f"❌ Failed to log upload to Supabase: {e}")
 
 def save_feedback(rating, feedback):
     try:
@@ -31,5 +35,7 @@ def save_feedback(rating, feedback):
                     VALUES (%s, %s)
                 """, (rating, feedback))
                 print("✅ Upload logged to Supabase")
+                logging.info("✅ Upload sent to Supabase")
     except Exception as e:
         print("Feedback logging failed:", e)
+        logging.error(f"❌ Failed to log upload to Supabase: {e}")

@@ -14,10 +14,12 @@ from waitress import serve
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 import psycopg2
+import logging
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 DATABASE_URL = os.getenv("DATABASE_URL")
+logging.basicConfig(level=logging.INFO)
 flask_files_route = os.path.join(os.getcwd(), 'flask_files')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = os.path.join(flask_files_route, 'flask_session')
