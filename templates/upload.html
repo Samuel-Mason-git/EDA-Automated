@@ -39,7 +39,7 @@
             <span class="text-danger fw-semibold">.feather</span>
           </p>
 
-          <form method="POST" enctype="multipart/form-data" id="upload-form" onsubmit="showLoading(); this.querySelector('button[type=submit]').disabled = true;">
+          <form method="POST" enctype="multipart/form-data" id="upload-form">
             <!-- Redesigned File Input -->
             <div class="mb-4">
               <label for="file" class="form-label fw-semibold">Choose a file</label>
@@ -194,7 +194,7 @@
   function showLoading(file) {
     if (file) {
       const fileSizeMB = file.size / (1024 * 1024);
-      const processingSpeedMBps = 0.59;  // Conservative estimate
+      const processingSpeedMBps = 0.59;
       const etaSeconds = Math.max(5, Math.ceil(fileSizeMB / processingSpeedMBps) + 60);
       document.getElementById('eta-text').textContent = `Estimated time to process: ~${etaSeconds} second${etaSeconds !== 1 ? 's' : ''}`;
     }
@@ -211,17 +211,23 @@
     if (file.size > MAX_FILE_SIZE_BYTES) {
       e.preventDefault();
       alert(`❌ File too large! Max allowed: ${MAX_FILE_SIZE_MB}MB\nYour file: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+
+      // 🛠 Reset button just in case
+      this.querySelector('button[type=submit]').disabled = false;
+
+      // 🛠 Reset the loading screen in case it briefly showed
+      document.getElementById('loading-screen').classList.add('d-none');
+      document.getElementById('upload-form-container').style.display = 'block';
       return false;
     }
 
-    // ✅ Only show loading screen if size is OK
     showLoading(file);
     this.querySelector('button[type=submit]').disabled = true;
   });
 
   document.getElementById("file").addEventListener("change", function () {
-  const fileName = this.files[0] ? this.files[0].name : "No file chosen";
-  document.getElementById("file-name").textContent = fileName;
+    const fileName = this.files[0] ? this.files[0].name : "No file chosen";
+    document.getElementById("file-name").textContent = fileName;
   });
 </script>
 {% endblock %}
