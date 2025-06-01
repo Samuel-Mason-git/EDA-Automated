@@ -5,9 +5,18 @@ import logging
 
 DATABASE_URL = os.environ['DATABASE_URL']
 
+def get_client_ip():
+    if request.headers.getlist("X-Forwarded-For"):
+        # Trust only the first IP in the list
+        return request.headers.getlist("X-Forwarded-For")[0].split(',')[0]
+    return request.remote_addr
+
 def log_upload(filename, size_mb, duration_sec):
     logging.basicConfig(level=logging.INFO)
     try:
+        client_ip = get_client_ip()
+        user_agent = request.headers.get('User-Agent')
+
         with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as cur:
                 cur.execute("""
@@ -17,8 +26,8 @@ def log_upload(filename, size_mb, duration_sec):
                     filename,
                     size_mb,
                     duration_sec,
-                    request.remote_addr,
-                    request.headers.get('User-Agent')
+                    client_ip,
+                    user_agent
                 ))
                 print("✅ Upload logged to Supabase")
                 logging.info("✅ Upload sent to Supabase")

@@ -2,6 +2,25 @@
 
 {% block title %}Dataset Overview{% endblock %}
 
+{% block meta %}
+  <meta name="description" content="View a high-level summary of your uploaded dataset, including row and column counts, missing values, outliers, skewness, and data types.">
+  <meta name="keywords" content="dataset overview, data summary, data structure, EDA preview, missing values, outlier count, column types, csv head preview">
+  <meta name="author" content="EDA Automated">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Dataset Overview – EDA Automated">
+  <meta property="og:description" content="Get a concise summary of your dataset: size, missing data, skewness, constant columns, and a preview of the first rows.">
+  <meta property="og:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Quick Dataset Overview – EDA Automated">
+  <meta name="twitter:description" content="Instantly see your dataset shape, types, and health stats like nulls, constants, and skew — with a full head preview.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
 

@@ -3,9 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-  <title>{% block title %}My Dataset App{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{% block title %}EDA Automated - Upload CSV for a Data Quality Audit{% endblock %}</title>
+
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+  {% block meta %}
+  <meta name="description" content="Upload your dataset and get an instant data quality audit. No storage, no tracking — just smart, secure, in-browser analysis.">
+  <meta name="keywords" content="data quality, dataset audit, csv analyzer, data profiling, no-code data tool, EDA, upload csv, data cleaning">
+  <meta name="author" content="EDA Automated">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Instant Data Quality Checker - No Signup Needed">
+  <meta property="og:description" content="Upload a CSV and get an in-depth quality report in minutes. Safe, secure, and code-free.">
+  <meta property="og:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Instant Data Quality Checker">
+  <meta name="twitter:description" content="Upload a CSV file and get instant profiling, outlier detection, and data quality checks — all in-browser.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+  {% endblock %}
+
+
   <style>
     html, body {
       height: 100%;

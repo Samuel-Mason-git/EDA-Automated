@@ -2,6 +2,20 @@
 
 {% block title %}Data Type Analysis{% endblock %}
 
+{% block meta %}
+  <meta name="description" content="Break down your dataset by type — numeric, categorical, boolean — and explore detailed statistics like mean, skewness, outliers, and unique counts.">
+  <meta name="keywords" content="data type analysis, data distribution, column breakdown, EDA statistics, outlier analysis, skew detection">
+  <meta name="author" content="EDA Automated">
+  <meta property="og:title" content="Data Type Analysis – EDA Automated">
+  <meta property="og:description" content="View detailed stats by data type, including outliers, skewness, kurtosis, and more — all in-browser.">
+  <meta property="og:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Explore Data Types – EDA Breakdown">
+  <meta name="twitter:description" content="Inspect your dataset by type: numeric, boolean, categorical. Identify issues and outliers efficiently.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
 

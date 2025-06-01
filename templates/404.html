@@ -2,6 +2,25 @@
 
 {% block title %}404 Not Found{% endblock %}
 
+{% block meta %}
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Oops! The page you’re looking for can’t be found. Try going back to the main data upload page.">
+  <meta name="author" content="EDA Automated">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="404 – Page Not Found">
+  <meta property="og:description" content="This page doesn't exist. Head back to EDA Automated to upload your dataset and start exploring.">
+  <meta property="og:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="404 – Page Not Found">
+  <meta name="twitter:description" content="This page can’t be found. Try going back to upload your data.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+{% endblock %}
+
 {% block content %}
 <div class="text-center mt-5 pt-5">
   <h1 class="display-4 fw-bold">404</h1>

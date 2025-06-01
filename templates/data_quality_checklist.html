@@ -1,6 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Data Quality Checklist{% endblock %}
 
+{% block meta %}
+  <meta name="description" content="Run a comprehensive data quality checklist: detect nulls, duplicates, skewed features, outliers, and multicollinearity — all automatically.">
+  <meta name="keywords" content="data quality checklist, missing data, constant columns, skewed data, outliers, VIF, multicollinearity, low variance">
+  <meta name="author" content="EDA Automated">
+  <meta property="og:title" content="Data Quality Checklist – EDA Automated">
+  <meta property="og:description" content="Automated audit covering missing values, skewness, correlation, VIF, and more. No code needed.">
+  <meta property="og:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Data Quality Audit – Instant Checklist">
+  <meta name="twitter:description" content="Run a detailed checklist on your dataset and uncover modeling issues instantly.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
 

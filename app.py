@@ -2,7 +2,7 @@ from data_quality import load_dataframe, data_quality_check, overview, data_qual
 from maintenance import convert_numpy, wipe_all_files_in_folder
 from scheduler import periodic_cleanup
 from db import log_upload, save_feedback
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, send_from_directory, Response
 from flask_session import Session
 import json
 from datetime import datetime
@@ -15,6 +15,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 import psycopg2
 import logging
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
@@ -165,3 +166,31 @@ if __name__ == '__main__':
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
+
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('static', 'robots.txt')
+
+
+@app.route('/sitemap.xml', methods=['GET'])
+def sitemap():
+    pages = []
+    now = datetime.utcnow().date().isoformat()
+
+    # Static routes (manual list)
+    static_routes = [
+        'upload_file',               
+        'overview',                  
+        'datatype_analysis',         
+        'data_quality_checklist',               
+    ]
+
+    for route in static_routes:
+        pages.append({
+            'loc': url_for(route, _external=True),
+            'lastmod': now
+        })
+
+    sitemap_xml = render_template("sitemap.xml", pages=pages)
+    return Response(sitemap_xml, mimetype='application/xml')

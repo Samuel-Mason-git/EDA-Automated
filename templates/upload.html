@@ -2,6 +2,20 @@
 
 {% block title %}Upload Dataset{% endblock %}
 
+{% block meta %}
+  <meta name="description" content="Upload your CSV or Excel dataset and receive a fast, secure, in-browser data quality audit. No signup, no storage — instant insights.">
+  <meta name="keywords" content="upload dataset, csv data audit, excel file checker, data profiling online, in-browser analysis, EDA tool">
+  <meta name="author" content="EDA Automated">
+  <meta property="og:title" content="Upload CSV or Excel Dataset – EDA Automated">
+  <meta property="og:description" content="Get instant profiling and outlier detection. 100% in-browser. Upload a file and start auditing your data.">
+  <meta property="og:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Upload a Dataset – Instant Data Quality Check">
+  <meta name="twitter:description" content="Upload a file and receive automatic data profiling with no storage and complete security.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='preview-image.png', _external=True) }}">
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-center pt-5 pb-5" style="padding-top: 15vh;">
   <div class="col-md-10 col-lg-8 col-xl-6">
