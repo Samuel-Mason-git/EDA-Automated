@@ -18,7 +18,6 @@ import psycopg2
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 DATABASE_URL = os.getenv("DATABASE_URL")
-
 flask_files_route = os.path.join(os.getcwd(), 'flask_files')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = os.path.join(flask_files_route, 'flask_session')
