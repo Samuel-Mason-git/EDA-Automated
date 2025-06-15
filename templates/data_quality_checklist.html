@@ -173,8 +173,8 @@
             </h5>
             <div class="collapse mt-3" id="NullCollapse">
               <div class="card card-body">
-                <p>Your dataset contains <strong>{{ data_quality_recommendations['null_columns']['null_column_count'] }} Null columns.</strong></p>
-                <p><i>Columns that contain only null values are problematic because they provide no information or variability, making them useless for analysis or modeling while unnecessarily increasing dataset size and complexity.</i></p>
+                  <p>Your dataset contains <strong>{{ data_quality_recommendations['null_columns']['null_column_count'] }} Null columns.</strong></p>
+                  <p><i>Columns that contain only null values are problematic because they provide no information or variability, making them useless for analysis or modeling while unnecessarily increasing dataset size and complexity.</i></p>
                   <h6>🔴 Null Columns (100% of Data Missing):</h6>
                     <ul>
                     {% for col in data_quality_recommendations['null_columns']['null_columns'] %}
@@ -182,7 +182,6 @@
                     {% endfor %}
                     </ul>
                   <p style="font-size: small;">💡 <em>Tip: These columns can usually be safely dropped using <code>df.dropna(axis=1, how='all')</code>.</em></p>
-                </div>
               </div>
             </div>
           </div>
@@ -210,7 +209,7 @@
                   <h6>🔴 Constant Columns:</h6>
                   <ul>
                   {% for col, sample_value in data_quality_recommendations['constant_recommendations']['constant_columns'] %}
-                    <li><strong>{{ col }}</strong> contains the same value (<code>{{ sample_value }}</code>) across all rows.</li>
+                    <li><strong>{{ col }}</strong> contains the same value (<code>{{ sample_value | e }}</code>) across all rows.</li>
                   {% endfor %}
                   </ul>
                   <p style="font-size: small;">💡 <em>Tip: You can safely remove constant columns from your dataset, as they do not contribute to predictions or insights. In pandas, use <code>df.loc[:, df.nunique() != 1]</code> to drop them automatically.</em></p>

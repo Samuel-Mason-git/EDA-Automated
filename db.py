@@ -7,7 +7,6 @@ DATABASE_URL = os.environ['DATABASE_URL']
 
 def get_client_ip():
     if request.headers.getlist("X-Forwarded-For"):
-        # Trust only the first IP in the list
         return request.headers.getlist("X-Forwarded-For")[0].split(',')[0]
     return request.remote_addr
 

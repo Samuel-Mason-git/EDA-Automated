@@ -80,6 +80,12 @@
         </div>
       </div>
 
+      <div class="text-center mt-4">
+        <button onclick="startExampleLoad()" class="btn btn-outline-primary btn-lg shadow-sm">
+          🚀 Try with Example Dataset
+        </button>
+      </div>
+
       <!-- How It Works Section -->
       <div class="card mt-5 shadow-sm border-0">
         <div class="card-body p-4 bg-white rounded-4">
@@ -208,9 +214,13 @@
   function showLoading(file) {
     if (file) {
       const fileSizeMB = file.size / (1024 * 1024);
-      const processingSpeedMBps = 0.59;
-      const etaSeconds = Math.max(5, Math.ceil(fileSizeMB / processingSpeedMBps) + 60);
-      document.getElementById('eta-text').textContent = `Estimated time to process: ~${etaSeconds} second${etaSeconds !== 1 ? 's' : ''}`;
+      const processingSpeedMBps = 1.5;
+      const etaSeconds = Math.max(5, Math.ceil(fileSizeMB / processingSpeedMBps) + 30);
+      const etaMinutes = Math.round(etaSeconds / 60);
+      document.getElementById('eta-text').innerHTML = `
+        Estimated processing time: <strong>~${etaMinutes} minute${etaMinutes !== 1 ? 's' : ''}</strong><br>
+        <span class="text-muted">This estimate may vary depending on server load and dataset complexity.</span>
+      `;
     }
 
     document.getElementById('upload-form-container').style.display = 'none';
@@ -243,5 +253,28 @@
     const fileName = this.files[0] ? this.files[0].name : "No file chosen";
     document.getElementById("file-name").textContent = fileName;
   });
+
+  function startExampleLoad() {
+      // GA4 event logging
+      if (typeof gtag === "function") {
+        gtag('event', 'try_example_click', {
+          event_category: 'engagement',
+          event_label: 'Try Example Dataset',
+          value: 1
+        });
+      }
+    
+      // Show loading screen
+      document.getElementById('upload-form-container').style.display = 'none';
+      document.getElementById('loading-screen').classList.remove('d-none');
+      document.getElementById('eta-text').innerHTML = `
+        <span class="text-muted">Loading the example dataset...</span>
+      `;
+    
+      // Navigate after a brief delay
+      setTimeout(() => {
+        window.location.href = "{{ url_for('try_example') }}";
+      }, 500);
+    }
 </script>
 {% endblock %}

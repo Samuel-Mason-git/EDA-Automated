@@ -16,8 +16,10 @@ import atexit
 import psycopg2
 import logging
 from datetime import datetime
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 DATABASE_URL = os.getenv("DATABASE_URL")
 logging.basicConfig(level=logging.INFO)
@@ -25,8 +27,9 @@ flask_files_route = os.path.join(os.getcwd(), 'flask_files')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = os.path.join(flask_files_route, 'flask_session')
 os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
-app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024
-max_file_size = 200 * 1024 * 1024
+max_file_size = 500 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = max_file_size
+
 Session(app)
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -84,7 +87,7 @@ def upload_file():
             end = time.time()
             duration = end - total_start
             speed = file_size_mb / duration
-            print(f"[Benchmark] Processed {file_size_mb:.2f} MB in {duration:.2f} seconds — {speed:.2f} MB/s")
+            (f"[Benchmark] Processed {file_size_mb:.2f} MB in {duration:.2f} seconds — {speed:.2f} MB/s")
             print("⏱️ Stage timings:")
             for k, v in timers.items():
                 print(f"  {k}: {v:.2f} sec")
@@ -97,6 +100,39 @@ def upload_file():
         else:
             print("❌ No file uploaded — reloading upload screen.")
     return render_template('upload.html', year=datetime.now().year, hide_navbar=True, max_file_size=max_file_size)
+
+@app.route('/try-example', methods=['GET'])
+def try_example():
+    example_path = os.path.join('static', 'example_data.csv')
+    total_start = time.time()
+    df = load_dataframe(example_path)
+    timers = {}
+
+    load_start = time.time()
+    timers['load_dataframe'] = time.time() - load_start
+
+    quality_start = time.time()
+    data_quality = data_quality_check(df)
+    timers['data_quality'] = time.time() - quality_start
+
+    overview_start = time.time()
+    overview_data = overview(df, data_quality)
+    timers['overview'] = time.time() - overview_start
+
+    recs = time.time()
+    data_quality_recs = data_quality_recommendations(df, overview_data, data_quality)
+    timers['checklist'] = time.time() - recs
+
+    caching = time.time()
+    session['overview'] = convert_numpy(overview_data)
+    session['data_quality'] = convert_numpy(data_quality)
+    session['data_quality_recs'] = convert_numpy(data_quality_recs)
+    timers['caching'] = time.time() - caching
+
+    session['upload_complete'] = True
+    session['example_used'] = True
+
+    return redirect(url_for('index'))
 
 @app.route('/overview')
 def index():
