@@ -43,34 +43,36 @@
         <div class="row row-cols-1 row-cols-md-2 g-3">
         
           {% set all_checks = [
-            ('Duplicates', 'Duplicate_Data'),
-            ('Missing', 'missing_recommendations'),
-            ('Nulls', 'null_columns'),
-            ('Constants', 'constant_recommendations'),
-            ('Outliers', 'outlier_recommendations'),
-            ('Skewness', 'skewness_recommendations'),
-            ('Cardinality', 'cardinality_recommendations'),
-            ('Variance', 'variance_recommendations'),
-            ('Boolean', 'imbalanced_boolean_columns'),
-            ('Correlation', 'correlation_recommendations')
+            ('Duplicates', 'Duplicate_Data', '#duplicate-section'),
+            ('Missing', 'missing_recommendations', '#missing-section'),
+            ('Nulls', 'null_columns', '#null-section'),
+            ('Constants', 'constant_recommendations', '#constant-section'),
+            ('Outliers', 'outlier_recommendations', '#outlier-section'),
+            ('Skewness', 'skewness_recommendations', '#skewness-section'),
+            ('Cardinality', 'cardinality_recommendations', '#cardinality-section'),
+            ('Variance', 'variance_recommendations', '#variance-section'),
+            ('Boolean', 'imbalanced_boolean_columns', '#boolean-section'),
+            ('Correlation', 'correlation_recommendations', '#correlation-section')
           ] %}
           
-          {% for label, key in all_checks %}
+          {% for label, key, anchor in all_checks %}
             {% set has_issue = data_quality_recommendations.get(key) %}
             <div class="col">
-              <div class="border border-dark rounded p-2 shadow-sm bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="text-dark fw-semibold">{{ label }}</span>
-                  <span class="badge rounded-pill fs-6 py-1 long-pill
-                               {% if has_issue %}
-                                 bg-danger text-white
-                               {% else %}
-                                 bg-success text-white
-                               {% endif %}">
-                    {% if has_issue %}Issues{% else %}Clean{% endif %}
-                  </span>
+              <a href="{{ anchor }}" class="text-decoration-none">
+                <div class="border border-dark rounded p-2 shadow-sm bg-white h-100">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-dark fw-semibold">{{ label }}</span>
+                    <span class="badge rounded-pill fs-6 py-1 long-pill
+                                 {% if has_issue %}
+                                   bg-danger text-white
+                                 {% else %}
+                                   bg-success text-white
+                                 {% endif %}">
+                      {% if has_issue %}Issues{% else %}Clean{% endif %}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </a>
             </div>
           {% endfor %}
           
@@ -92,14 +94,16 @@
               {% set vif_text = 'Clean' %}
               {% set vif_badge = 'bg-success text-white' %}
             {% endif %}
-            <div class="border border-dark rounded p-2 shadow-sm bg-white">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="text-dark fw-semibold">Multicollinearity</span>
-                <span class="badge rounded-pill fs-6 py-1 long-pill {{ vif_badge }}">
-                  {{ vif_text }}
-                </span>
+            <a href="#vif-section" class="text-decoration-none">
+              <div class="border border-dark rounded p-2 shadow-sm bg-white h-100">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-dark fw-semibold">Multicollinearity</span>
+                  <span class="badge rounded-pill fs-6 py-1 long-pill {{ vif_badge }}">
+                    {{ vif_text }}
+                  </span>
+                </div>
               </div>
-            </div>
+            </a>
           </div>
         
         </div>
@@ -115,7 +119,7 @@
         
           <!-- Duplicate Data -->
           {% if data_quality_recommendations.get('Duplicate_Data') %}
-            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+            <div id="duplicate-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
               <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <span class="text-dark">Duplicate Data</span>
                 <div>
@@ -146,7 +150,7 @@
           
           <!-- Missing Data -->
           {% if data_quality_recommendations.get('missing_recommendations') %}
-            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+            <div id="missing-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
               <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <span class="text-dark">Missing Data</span>
                 <div>
@@ -192,7 +196,7 @@
           
           <!-- Null Columns -->
           {% if data_quality_recommendations.get('null_columns') %}
-            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+            <div id="null-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
               <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <span class="text-dark">Null Columns</span>
                 <div>
@@ -226,7 +230,7 @@
           
           <!-- Constant Columns -->
           {% if data_quality_recommendations.get('constant_recommendations') %}
-            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+            <div id="constant-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
               <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <span class="text-dark">Constant Columns</span>
                 <div>
@@ -271,7 +275,7 @@
         
             <!-- Outlier  -->
             {% if data_quality_recommendations.get('outlier_recommendations') %}
-              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div id="outlier-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                   <span class="text-dark">Outliers</span>
                   <div>
@@ -354,7 +358,7 @@
             
             <!-- Skewness -->
             {% if data_quality_recommendations.get('skewness_recommendations') %}
-              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div id="skewness-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                   <span class="text-dark">Skewness</span>
                   <div>
@@ -478,7 +482,7 @@
             
             <!-- Variance -->
             {% if data_quality_recommendations.get('variance_recommendations') %}
-              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div id="variance-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                   <span class="text-dark">Variance</span>
                   <div>
@@ -539,7 +543,7 @@
             
             <!-- Boolean Class Distribution -->
             {% if data_quality_recommendations.get('imbalanced_boolean_columns') %}
-              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div id="boolean-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                   <span class="text-dark">Boolean Distribution</span>
                   <div>
@@ -590,7 +594,7 @@
     
             <!-- Cardinality -->
             {% if data_quality_recommendations.get('cardinality_recommendations') %}
-              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div id="cardinality-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                   <span class="text-dark">Cardinality</span>
                   <div>
@@ -662,7 +666,7 @@
         
             <!-- Correlation -->
             {% if data_quality_recommendations.get('correlation_recommendations') %}
-              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div id="correlation-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                   <span class="text-dark">Correlation</span>
                   <div>
@@ -722,7 +726,7 @@
                           <p class="text-muted small"><strong>Format:</strong> Feature 1, Feature 2, Coefficient</p>
                           <ul class="mb-0">
                             {% for pair, corr in data_quality_recommendations['correlation_recommendations']['numeric_corr']['numeric_high_corr'].items() %}
-                              <li><strong>{{ pair }}</strong>: {{ corr }}</li>
+                              <p><strong>{{ pair }}</strong>: {{ corr }}</p>
                             {% endfor %}
                           </ul>
                         </div>
@@ -734,7 +738,7 @@
                         <p class="text-muted small"><strong>Format:</strong> Feature 1, Feature 2, Statistic</p>
                         <ul class="mb-0">
                           {% for pair, corr in data_quality_recommendations['correlation_recommendations']['categorical_corr']['categorical_high_corr'].items() %}
-                            <li><strong>{{ pair }}</strong>: {{ corr }}</li>
+                            <p><strong>{{ pair }}</strong>: {{ corr }}</p>
                           {% endfor %}
                         </ul>
                     </div>
@@ -756,7 +760,7 @@
               {% set vif = data_quality_recommendations['VIF_recommendations'] %}
 
               {% if vif.get('medium_VIF') or vif.get('high_VIF') %}
-                <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                <div id="vif-section" class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
                   <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                     <span class="text-dark">Variance Inflation Factor (VIF)</span>
                     <div>
