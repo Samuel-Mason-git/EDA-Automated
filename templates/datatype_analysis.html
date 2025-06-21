@@ -22,7 +22,7 @@
   <!-- Title -->
   <div class="mb-4 pb-2 border-bottom">
     <h1 class="display-5 fw-bold d-flex align-items-center">
-      <i class="bi bi-bar-chart-line-fill text-primary me-2"></i>&nbsp;Data Type Analysis
+      Data Type Analysis
     </h1>
     <p class="text-muted">Explore detailed statistical breakdowns by data type — including outliers, skewness, category counts, and more.</p>
   </div>
@@ -36,14 +36,16 @@
 
     <div class="card shadow-sm border-0">
       <div class="card-header bg-white border-bottom-0">
-        <button class="btn btn-outline-secondary w-100 text-start fw-semibold rounded-pill shadow-sm d-flex justify-content-between align-items-center"
+        <button class="btn btn-outline-dark w-100 text-start fw-semibold rounded-pill shadow-sm px-3 py-2"
                 type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#collapse{{ dtype }}"
                 aria-expanded="false"
                 aria-controls="collapse{{ dtype }}">
-          <span>📊 Show/Hide Detailed Information</span>
-          <i class="bi bi-chevron-down"></i>
+          <div class="d-flex flex-row flex-nowrap justify-content-between align-items-center w-100 gap-2">
+            <span class="text-truncate">📊 Show/Hide Detailed Information</span>
+            <i class="bi bi-chevron-down fs-5"></i>
+          </div>
         </button>
       </div>
       <div id="collapse{{ dtype }}" class="collapse">
@@ -117,20 +119,20 @@
   </section>
   {% endfor %}
 
-  <!-- CTA -->
-  <div class="card border-0 shadow-sm mt-5 bg-light p-4">
-    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
-      <div class="mb-3 mb-md-0">
-        <h5 class="fw-bold mb-1">Final Step: Run the Data Quality Checklist</h5>
-        <p class="text-muted mb-0">
-          Validate your data from A–Z with automated checks and smart recommendations.
-        </p>
+      <!-- CTA -->
+    <div class="card border-0 shadow-sm mt-5 bg-white p-4">
+      <div class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-between text-center text-md-start">
+        <div class="mb-3 mb-md-0">
+          <h5 class="fw-bold mb-1">Final Step: Run the Data Quality Checklist</h5>
+          <p class="text-muted mb-0">
+            Validate your data from A–Z with automated checks and smart recommendations.
+          </p>
+        </div>
+        <a href="{{ url_for('data_quality_checklist') }}" class="btn btn-outline-dark fw-semibold btn-lg shadow-sm rounded-pill px-4 py-2">
+          ✅ Start the Checklist
+        </a>
       </div>
-      <a href="{{ url_for('data_quality_checklist') }}" class="btn btn-success btn-lg rounded-pill d-inline-flex align-items-center gap-2 shadow-sm">
-        ✅ Start the Checklist
-      </a>
     </div>
-  </div>
 
 </div>
 {% endblock %}

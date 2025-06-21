@@ -16,11 +16,20 @@
 {% endblock %}
 
 {% block content %}
+<style>
+  @media (min-width: 830px) {
+    .long-pill {
+      padding-left: 3rem !important;
+    padding-right: 3rem !important;
+    }
+  }
+</style>
+
 <div class="container py-5">
 
     <div class="mb-4 pb-2 border-bottom">
       <h1 class="display-5 fw-bold d-flex align-items-center">
-        <i class="bi bi-clipboard2-check-fill text-primary me-2"></i>&nbsp;Data Quality Checklist
+        Data Quality Checklist
       </h1>
       <p class="text-muted mb-0">Comprehensive review of your dataset to catch statistical issues and modeling risks.</p>
     </div>
@@ -28,605 +37,646 @@
     <!-- Summary Checklist -->
     <div class="card mb-4 shadow-sm">
       <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>&nbsp;Data Quality Summary</h5>
+        <h5 class="mb-0 text-dark">Data Quality Summary</h5>
       </div>
       <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <ul class="list-group list-group-flush">
-              {% set summary_checks = [
-                ('Duplicate Data', 'Duplicate_Data'),
-                ('Missing Data', 'missing_recommendations'),
-                ('Null Columns', 'null_columns'),
-                ('Constant Columns', 'constant_recommendations'),
-                ('Outliers', 'outlier_recommendations'),
-                ('Skewness', 'skewness_recommendations')
-              ] %}
-              {% for label, key in summary_checks %}
-                <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-action">
-                  <span class="fw-semibold">{{ label }}</span>
-                  {% if data_quality_recommendations.get(key) %}
-                    <span class="badge bg-danger text-white rounded-pill px-3 py-2 fs-6">❌ Issues Found</span>
-                  {% else %}
-                    <span class="badge bg-success text-white rounded-pill px-3 py-2 fs-6">✅ Clean</span>
-                  {% endif %}
-                </li>
-              {% endfor %}
-            </ul>
+        <div class="row row-cols-1 row-cols-md-2 g-3">
+        
+          {% set all_checks = [
+            ('Duplicates', 'Duplicate_Data'),
+            ('Missing', 'missing_recommendations'),
+            ('Nulls', 'null_columns'),
+            ('Constants', 'constant_recommendations'),
+            ('Outliers', 'outlier_recommendations'),
+            ('Skewness', 'skewness_recommendations'),
+            ('Cardinality', 'cardinality_recommendations'),
+            ('Variance', 'variance_recommendations'),
+            ('Boolean', 'imbalanced_boolean_columns'),
+            ('Correlation', 'correlation_recommendations')
+          ] %}
+          
+          {% for label, key in all_checks %}
+            {% set has_issue = data_quality_recommendations.get(key) %}
+            <div class="col">
+              <div class="border border-dark rounded p-2 shadow-sm bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-dark fw-semibold">{{ label }}</span>
+                  <span class="badge rounded-pill fs-6 py-1 long-pill
+                               {% if has_issue %}
+                                 bg-danger text-white
+                               {% else %}
+                                 bg-success text-white
+                               {% endif %}">
+                    {% if has_issue %}Issues{% else %}Clean{% endif %}
+                  </span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          
+          <!-- Special Case: VIF -->
+          <div class="col">
+            {% set vif = data_quality_recommendations.get('VIF_recommendations') %}
+            {% if vif %}
+              {% if vif.get('numeric_column_size_error') %}
+                {% set vif_text = 'Error' %}
+                {% set vif_badge = 'bg-warning text-dark' %}
+              {% elif vif.get('medium_VIF') or vif.get('high_VIF') %}
+                {% set vif_text = 'Issues' %}
+                {% set vif_badge = 'bg-danger text-white' %}
+              {% else %}
+                {% set vif_text = 'Clean' %}
+                {% set vif_badge = 'bg-success text-white' %}
+              {% endif %}
+            {% else %}
+              {% set vif_text = 'Clean' %}
+              {% set vif_badge = 'bg-success text-white' %}
+            {% endif %}
+            <div class="border border-dark rounded p-2 shadow-sm bg-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-dark fw-semibold">Multicollinearity</span>
+                <span class="badge rounded-pill fs-6 py-1 long-pill {{ vif_badge }}">
+                  {{ vif_text }}
+                </span>
+              </div>
+            </div>
           </div>
-          <div class="col-md-6">
-            <ul class="list-group list-group-flush">
-              {% set more_checks = [
-                ('Cardinality', 'cardinality_recommendations'),
-                ('Variance', 'variance_recommendations'),
-                ('Boolean Distribution', 'imbalanced_boolean_columns'),
-                ('Correlation', 'correlation_recommendations')
-              ] %}
-              {% for label, key in more_checks %}
-                <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-action">
-                  <span class="fw-semibold">{{ label }}</span>
-                  {% if data_quality_recommendations.get(key) %}
-                    <span class="badge bg-danger text-white rounded-pill px-3 py-2 fs-6">❌ Issues Found</span>
-                  {% else %}
-                    <span class="badge bg-success text-white rounded-pill px-3 py-2 fs-6">✅ Clean</span>
-                  {% endif %}
-                </li>
-              {% endfor %}
-              
-              <!-- VIF Special Case -->
-              <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-action">
-                <span class="fw-semibold">Variance Inflation Factor</span>
-                {% if data_quality_recommendations.get('VIF_recommendations') %}
-                  {% set vif = data_quality_recommendations['VIF_recommendations'] %}
-                  {% if vif.get('medium_VIF') or vif.get('high_VIF') %}
-                    <span class="badge bg-danger text-white rounded-pill px-3 py-2 fs-6">❌ Issues Found</span>
-                  {% elif vif.get('numeric_column_size_error') %}
-                    <span class="badge bg-danger text-white rounded-pill px-3 py-2 fs-6">⚠️ VIF Calculation Error</span>
-                  {% else %}
-                    <span class="badge bg-success text-white rounded-pill px-3 py-2 fs-6">✅ Clean</span>
-                  {% endif %}
-                {% else %}
-                  <span class="badge bg-success text-white rounded-pill px-3 py-2 fs-6">✅ Clean</span>
-                {% endif %}
-              </li>
-            </ul>
-          </div>
+        
         </div>
       </div>
     </div>
 
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-1-square-fill text-primary me-2"></i>&nbsp;Data Integrity Checks</h5>
-      </div>
-      <div class="card-body">
 
-      
-        <!-- Duplicate Data -->
-        {% if data_quality_recommendations.get('Duplicate_Data') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Duplicate Rows Detected
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#duplicateCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="duplicateCollapse">
-              <div class="card card-body">
-                <p>Your dataset contains <strong>{{ data_quality_recommendations['Duplicate_Data']['duplicate_row_count'] }} duplicate rows.</strong></p>
-                <p><i>Duplicates in data give overly optimistic test performance that results to overfitting.
-                  So it is important to remove them but while removing them always look for other features 
-                  related to them as removing duplicates could lead to a loss of valuable insights.</i></p>
-                <p style="font-size: small;">💡 <em>Tip: Consider using <code>df.drop_duplicates()</code> to remove them.</em></p>
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ Your data has no duplicate rows.</h5>
-          </div>
-        {% endif %}
-    
-    
-        <!-- Missing Data -->
-        {% if data_quality_recommendations.get('missing_recommendations') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Missing Data Found
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#missingCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="missingCollapse">
-              <div class="card card-body">
-                <p>Your dataset contains <strong>{{ data_quality_recommendations['missing_recommendations']['total_missing_data'] }} Null values.</strong></p>
-                <p><i>Null values are problematic because they can distort analysis, lead to inaccurate conclusions, and reduce the reliability of machine learning models. They may also hinder the performance of algorithms that require complete data for proper functioning.</i></p>
-                {% if data_quality_recommendations['missing_recommendations'].get('30%+_missing_data_columns') %}
-                  <h6>🔴 High Missing (>30%):</h6>
-                    <ul>
-                    {% for col, info in data_quality_recommendations['missing_recommendations']['30%+_missing_data_columns'].items() %}
-                      <li><strong>{{ col }}</strong>: {{ info.missing_count }} missing ({{ info.missing_percent }}%)</li>
-                    {% endfor %}
-                    </ul>
-                  <p style="font-size: small;">💡 <em>Tip: Columns with over 30% missing data may not provide reliable insights. Consider removing them.</em></p>
-                {% endif %}
-                {% if data_quality_recommendations['missing_recommendations'].get('0-29%_missing_data_columns') %}
-                  <h6>🟡 Partial Missing (0–29%):</h6>
-                  <ul>
-                  {% for col, info in data_quality_recommendations['missing_recommendations']['0-29%_missing_data_columns'].items() %}
-                    <li><strong>{{ col }}</strong>: {{ info.missing_count }} missing ({{ info.missing_percent }}%)</li>
-                  {% endfor %}
-                  </ul>
-                  <p style="font-size: small;">💡 <em>Tip: Columns with 0-29% missing data can often be handled with imputation techniques. For smaller missing percentages, consider using mean, median, or mode imputation. If the data is more complex or critical, machine learning models like Random Forests can be used to predict missing values based on other features, provided the data is representative.</em></p>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ Your data has no Null values.</h5>
-          </div>
-        {% endif %}
+      <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="bi bi-1-square-fill text-dark me-2"></i>&nbsp;Data Integrity Checks</h5>
+        </div>
+        <div class="card-body">
         
-        <!-- Null Columns -->
-        {% if data_quality_recommendations.get('null_columns') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Null Columns Found
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#NullCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="NullCollapse">
-              <div class="card card-body">
-                  <p>Your dataset contains <strong>{{ data_quality_recommendations['null_columns']['null_column_count'] }} Null columns.</strong></p>
-                  <p><i>Columns that contain only null values are problematic because they provide no information or variability, making them useless for analysis or modeling while unnecessarily increasing dataset size and complexity.</i></p>
-                  <h6>🔴 Null Columns (100% of Data Missing):</h6>
+          <!-- Duplicate Data -->
+          {% if data_quality_recommendations.get('Duplicate_Data') %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                <span class="text-dark">Duplicate Data</span>
+                <div>
+                  <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                          type="button" data-bs-toggle="collapse" data-bs-target="#duplicateCollapse"
+                          aria-expanded="false" aria-controls="duplicateCollapse">
+                    Details
+                  </button>
+                  <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                </div>
+              </div>
+              <div class="collapse mt-3" id="duplicateCollapse">
+                <div class="card card-body">
+                  <p>Your dataset contains <strong>{{ data_quality_recommendations['Duplicate_Data']['duplicate_row_count'] }} duplicate rows.</strong></p>
+                  <p><i>Duplicates in data give overly optimistic test performance that results to overfitting.
+                    So it is important to remove them but while removing them always look for other features 
+                    related to them as removing duplicates could lead to a loss of valuable insights.</i></p>
+                  <p style="font-size: small;">💡 <em>Tip: Consider using <code>df.drop_duplicates()</code> to remove them.</em></p>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+              <span class="text-dark">Duplicate Data</span>
+              <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+            </div>
+          {% endif %}
+          
+          <!-- Missing Data -->
+          {% if data_quality_recommendations.get('missing_recommendations') %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                <span class="text-dark">Missing Data</span>
+                <div>
+                  <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                          type="button" data-bs-toggle="collapse" data-bs-target="#missingCollapse"
+                          aria-expanded="false" aria-controls="missingCollapse">
+                    Details
+                  </button>
+                  <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                </div>
+              </div>
+              <div class="collapse mt-3" id="missingCollapse">
+                <div class="card card-body">
+                  <p>Your dataset contains <strong>{{ data_quality_recommendations['missing_recommendations']['total_missing_data'] }} Null values.</strong></p>
+                  <p><i>Null values are problematic because they can distort analysis, lead to inaccurate conclusions, and reduce the reliability of machine learning models.</i></p>
+                  {% if data_quality_recommendations['missing_recommendations'].get('30%+_missing_data_columns') %}
+                    <h6>High Missing (>30%):</h6>
                     <ul>
+                      {% for col, info in data_quality_recommendations['missing_recommendations']['30%+_missing_data_columns'].items() %}
+                        <li><strong>{{ col }}</strong>: {{ info.missing_count }} missing ({{ info.missing_percent }}%)</li>
+                      {% endfor %}
+                    </ul>
+                    <p style="font-size: small;">💡 <em>Tip: Columns with over 30% missing data may not provide reliable insights. Consider removing them.</em></p>
+                  {% endif %}
+                  {% if data_quality_recommendations['missing_recommendations'].get('0-29%_missing_data_columns') %}
+                    <h6>Partial Missing (0–29%):</h6>
+                    <ul>
+                      {% for col, info in data_quality_recommendations['missing_recommendations']['0-29%_missing_data_columns'].items() %}
+                        <li><strong>{{ col }}</strong>: {{ info.missing_count }} missing ({{ info.missing_percent }}%)</li>
+                      {% endfor %}
+                    </ul>
+                    <p style="font-size: small;">💡 <em>Tip: Impute with mean/median/mode or ML-based estimates.</em></p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+              <span class="text-dark">Missing Data</span>
+              <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+            </div>
+          {% endif %}
+          
+          <!-- Null Columns -->
+          {% if data_quality_recommendations.get('null_columns') %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                <span class="text-dark">Null Columns</span>
+                <div>
+                  <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                          type="button" data-bs-toggle="collapse" data-bs-target="#NullCollapse"
+                          aria-expanded="false" aria-controls="NullCollapse">
+                    Details
+                  </button>
+                  <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                </div>
+              </div>
+              <div class="collapse mt-3" id="NullCollapse">
+                <div class="card card-body">
+                  <p>Your dataset contains <strong>{{ data_quality_recommendations['null_columns']['null_column_count'] }} Null columns.</strong></p>
+                  <p><i>These columns are entirely missing and can be safely dropped.</i></p>
+                  <ul>
                     {% for col in data_quality_recommendations['null_columns']['null_columns'] %}
                       <li><strong>{{ col }}</strong></li>
                     {% endfor %}
-                    </ul>
-                  <p style="font-size: small;">💡 <em>Tip: These columns can usually be safely dropped using <code>df.dropna(axis=1, how='all')</code>.</em></p>
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ Your data has no Null columns.</h5>
-          </div>
-        {% endif %}
-        
-        
-        <!-- Constant Columns -->
-        {% if data_quality_recommendations.get('constant_recommendations') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Constant Columns Found
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#constantCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="constantCollapse">
-              <div class="card card-body">
-                <p>Your dataset contains 
-                   <strong>{{ data_quality_recommendations['constant_recommendations']['total_constant_columns'] }}
-                   Constant column{{ 's' if data_quality_recommendations['constant_recommendations']['total_constant_columns'] > 1 else '' }}.</strong> </p>
-                <p><i>A constant column is a column where every row has the same value. These columns don’t provide any useful information for analysis or machine learning models because they have no variability.</i></p>
-                {% if data_quality_recommendations['constant_recommendations'].get('constant_columns') %}
-                  <h6>🔴 Constant Columns:</h6>
-                  <ul>
-                  {% for col, sample_value in data_quality_recommendations['constant_recommendations']['constant_columns'] %}
-                    <li><strong>{{ col }}</strong> contains the same value (<code>{{ sample_value | e }}</code>) across all rows.</li>
-                  {% endfor %}
                   </ul>
-                  <p style="font-size: small;">💡 <em>Tip: You can safely remove constant columns from your dataset, as they do not contribute to predictions or insights. In pandas, use <code>df.loc[:, df.nunique() != 1]</code> to drop them automatically.</em></p>
-                {% endif %}
+                  <p style="font-size: small;">💡 <em>Use <code>df.dropna(axis=1, how='all')</code> to remove them.</em></p>
+                </div>
               </div>
             </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ Your data has no constant columns.</h5>
-          </div>
-        {% endif %}
+          {% else %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+              <span class="text-dark">Null Columns</span>
+              <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+            </div>
+          {% endif %}
+          
+          <!-- Constant Columns -->
+          {% if data_quality_recommendations.get('constant_recommendations') %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                <span class="text-dark">Constant Columns</span>
+                <div>
+                  <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                          type="button" data-bs-toggle="collapse" data-bs-target="#constantCollapse"
+                          aria-expanded="false" aria-controls="constantCollapse">
+                    Details
+                  </button>
+                  <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                </div>
+              </div>
+              <div class="collapse mt-3" id="constantCollapse">
+                <div class="card card-body">
+                  <p>Your dataset contains 
+                    <strong>{{ data_quality_recommendations['constant_recommendations']['total_constant_columns'] }}</strong>
+                    constant column{{ 's' if data_quality_recommendations['constant_recommendations']['total_constant_columns'] > 1 else '' }}.
+                  </p>
+                  <ul>
+                    {% for col, sample_value in data_quality_recommendations['constant_recommendations']['constant_columns'] %}
+                      <li><strong>{{ col }}</strong> always equals <code>{{ sample_value | e }}</code></li>
+                    {% endfor %}
+                  </ul>
+                  <p style="font-size: small;">💡 <em>Drop these using <code>df.loc[:, df.nunique() != 1]</code>.</em></p>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+              <span class="text-dark">Constant Columns</span>
+              <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+            </div>
+          {% endif %}
+        </div>
       </div>
-    </div>
     
 
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-2-square-fill text-primary me-2"></i>&nbsp;Statistical Distribution</h5>
-      </div>
-      <div class="card-body">
-    
-        <!-- Outlier  -->
-        {% if data_quality_recommendations.get('outlier_recommendations') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Outliers Detected
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#outlierCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="outlierCollapse">
-              <div class="card card-body">
-                <p>Your dataset contains <strong>{{ data_quality_recommendations['outlier_recommendations']['total_outliers'] }} outliers</strong><i> (Z-Score > 3σ) .</i></p>
-                <p><i>Outliers can significantly skew analysis, distort statistical measures like mean and standard deviation, and lead to misleading conclusions. They can also impact machine learning models by causing them to overfit or underperform, especially in algorithms sensitive to extreme values. Handling outliers ensures more accurate and reliable insights from the data.</i></p>
-                {% for col, info in data_quality_recommendations['outlier_recommendations']['outlier_columns'].items() %}
-                <ul class="list-unstyled">
-                  {% set safe_id = col
-                    |replace(' ', '_space_')
-                    |replace('%', '_percentage_')
-                    |replace('.', '_dot_')
-                    |replace('/', '_slash_')
-                    |replace('\\', '_bslash_')
-                    |replace('(', '_obracket_')
-                    |replace(')', '_cbracket_')
-                    |replace('[', '_csqbracket_')
-                    |replace(']', '_osqbracket_')
-                  %}
-                  <div class="mb-2">
-                    <li>
-                      <button class="btn btn-outline-primary text-start w-100 fw-bold shadow-sm px-4 py-2 mb-2 rounded" 
-                            type="button" 
-                            data-toggle="collapse" 
-                            data-target="#collapse{{ safe_id }}" 
-                            aria-expanded="false" 
-                            aria-controls="collapse{{ safe_id }}">
-                      <strong>📌 {{ col | upper }}</strong>
-                      </button>
-                  </li>
-                  <div class="collapse mt-2" id="collapse{{ safe_id }}">
-                      <div class="card">
-                        <div class="card-body">
-                        <h6><strong><u>{{ col | upper }}</u></strong></h6>
-                          <ul>
-                            {% for sigma, count in info.items() %}
-                              {% if count != 0 and sigma != 'plot' %}
-                                <li><strong>{{ sigma }}</strong>: <i>{{ count }} outliers</i></li>
-                                {% if sigma == '3σ - 4σ' %}
-                                <p style="font-size: small;">💡 <em>Tip: These outliers are relatively mild and might be worth investigating further. In most cases, imputation (e.g., replacing with the mean, median, or using a machine learning model) or winsorization (capping the values) is suitable.</em></p>
-                                {% elif sigma == '4σ - 5σ' %}
-                                <p style="font-size: small;">💡 <em>Tip: These outliers are more extreme and may significantly impact the analysis. Consider using more aggressive methods like capping or transforming the values. Depending on the context, these values might be errors or genuine rare occurrences, so domain knowledge is crucial.</em></p>
-                                {% elif sigma == '5σ+' %}
-                                <p style="font-size: small;">💡 <em>Tip: These outliers are more extreme and may significantly impact the analysis. Consider using more aggressive methods like capping or transforming the values. Depending on the context, these values might be errors or genuine rare occurrences, so domain knowledge is crucial.</em></p>
-                                {% endif %}
-                              {% elif count != 0 and sigma == 'plot' %}
-                              <div class="text-center mb-3">
-                                <img src="data:image/png;base64,{{ info.plot }}" 
-                                     alt="Outlier plot for {{ col }}" 
-                                     class="img-fluid" 
-                                     style="max-height: 300px;">
-                              </div>
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="bi bi-2-square-fill text-dark me-2"></i>&nbsp;Statistical Distribution</h5>
+          </div>
+          <div class="card-body">
+        
+            <!-- Outlier  -->
+            {% if data_quality_recommendations.get('outlier_recommendations') %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                  <span class="text-dark">Outliers</span>
+                  <div>
+                    <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#outlierCollapse"
+                            aria-expanded="false" aria-controls="outlierCollapse">
+                      Details
+                    </button>
+                    <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                  </div>
+                </div>
+                <div class="collapse mt-3" id="outlierCollapse">
+                  <div class="card card-body">
+                    <p>Your dataset contains <strong>{{ data_quality_recommendations['outlier_recommendations']['total_outliers'] }} outliers</strong><i> (Z-Score > 3σ) .</i></p>
+                    <p><i>Outliers can significantly skew analysis, distort statistical measures like mean and standard deviation, and lead to misleading conclusions. They can also impact machine learning models by causing them to overfit or underperform.</i></p>
+                    {% for col, info in data_quality_recommendations['outlier_recommendations']['outlier_columns'].items() %}
+                    <ul class="list-unstyled">
+                      {% set safe_id = col
+                        |replace(' ', '_space_')
+                        |replace('%', '_percentage_')
+                        |replace('.', '_dot_')
+                        |replace('/', '_slash_')
+                        |replace('\\', '_bslash_')
+                        |replace('(', '_obracket_')
+                        |replace(')', '_cbracket_')
+                        |replace('[', '_csqbracket_')
+                        |replace(']', '_osqbracket_')
+                      %}
+                      <div class="mb-2">
+                        <li>
+                          <button class="btn btn-outline-dark btn-sm text-start w-100 fw-normal shadow-sm px-3 py-1 mb-2 rounded"
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#collapse{{ safe_id }}" 
+                                aria-expanded="false" 
+                                aria-controls="collapse{{ safe_id }}">
+                          <strong>{{ col | upper }}</strong>
+                          </button>
+                      </li>
+                      <div class="collapse mt-2" id="collapse{{ safe_id }}">
+                          <div class="card">
+                            <div class="card-body">
+                            <h6><strong><u>{{ col | upper }}</u></strong></h6>
+                               <ul>
+                                {% for sigma, count in info.items() %}
+                                  {% if count != 0 and sigma != 'plot' %}
+                                    <li><strong>{{ sigma }}</strong>: <i>{{ count }} outliers</i></li>
+                                    {% if sigma == '3σ - 4σ' %}
+                                      <p class="small"><em>Tip: These are mild outliers. Try imputation or winsorization.</em></p>
+                                    {% elif sigma == '4σ - 5σ' or sigma == '5σ+' %}
+                                      <p class="small"><em>Tip: These are extreme. Consider transformation or capping.</em></p>
+                                    {% endif %}
+                                  {% endif %}
+                                {% endfor %}
+                              </ul>
+                            
+                              {% if info.plot %}
+                                <div class="text-center mb-3 mt-2">
+                                  <img src="data:image/png;base64,{{ info.plot }}" 
+                                       alt="Outlier plot for {{ col }}" 
+                                       class="img-fluid rounded border mx-auto d-block"
+                                       style="max-width: 100%; height: auto; max-height: 450px;">
+                                </div>
                               {% endif %}
-                            {% endfor %}
-                          </ul>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                {% endfor %}
-                </ul>
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ No significant outliers detected in your dataset.</h5>
-          </div>
-        {% endif %}
-        
-        <!-- Skewness -->
-        {% if data_quality_recommendations.get('skewness_recommendations') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Skewed Distributions Detected
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#skewCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="skewCollapse">
-              <div class="card card-body">
-                <div class="text-left">
-                  <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#skewImpact" aria-expanded="false" aria-controls="skewImpact">
-                    📘 When should I care about my data being skewed?
-                  </button>
-                </div>
-                <div class="collapse mt-2" id="skewImpact">
-                  <div class="card card-body">
-                    <p>If your dataset is skewed, it might impact your analysis or modeling in important ways:</p>
-                    <ul>
-                      <li>You’re using models that assume normally distributed data (e.g., linear regression, logistic regression, ANOVA)</li>
-                      <li>You rely on mean or standard deviation for detecting outliers or scaling</li>
-                      <li>Your dataset is small, so extreme values have more influence</li>
-                      <li>Your model’s performance is unexpectedly poor or predictions seem biased</li>
+                    {% endfor %}
                     </ul>
                   </div>
                 </div>
-                <hr>
-                <p>Your dataset Skewness range: <strong>{{ data_quality_recommendations['skewness_recommendations']['skewness_range'][0]|round(2) }}</strong> (Min) to <strong>{{ data_quality_recommendations['skewness_recommendations']['skewness_range'][1]|round(2) }}</strong> (Max)</p>
-                <p><i>Skewness indicates asymmetry in the distribution of a dataset, which can negatively impact many statistical models and machine learning algorithms that assume normality. Highly skewed features can distort mean and variance, reduce model performance, and lead to biased or misleading results if not addressed through transformation or scaling.</i></p>
-                {% if data_quality_recommendations['skewness_recommendations'].get('skewed_columns') %}
-                  <ul class="list-unstyled">
-                    {% for col, info in data_quality_recommendations['skewness_recommendations']['skewed_columns'].items() %}
-                    {% set safe_id = col
-                      |replace(' ', '_space_')
-                      |replace('%', '_percentage_')
-                      |replace('.', '_dot_')
-                      |replace('/', '_slash_')
-                      |replace('\\', '_bslash_')
-                      |replace('(', '_obracket_')
-                      |replace(')', '_cbracket_')
-                      |replace('[', '_csqbracket_')
-                      |replace(']', '_osqbracket_')
-                    %}
-                      <li class="mb-2">
-                        <button class="btn btn-outline-primary text-start w-100 fw-bold shadow-sm px-4 py-2 mb-2 rounded" 
-                                type="button" 
-                                data-toggle="collapse" 
-                                data-target="#collapseskew{{ safe_id }}" 
-                                aria-expanded="false" 
-                                aria-controls="collapseskew{{ safe_id }}">
-                          <strong>📈 {{ col | upper }}</strong>
-                        </button>
-                        <div class="collapse mt-2" id="collapseskew{{ safe_id }}">
-                          <div class="card">
-                            <div class="card-body">
-                              <h6><strong><u>{{ col | upper }}</u></strong></h6>
-                              <ul>
-                                <li><strong>Skewness</strong>: <i>{{ info.skewness|round(3) }}</i></li>
-                                <li><strong>Tail</strong>: <i>{{ info.tail }}</i></li>
-                                <li><strong>Classification</strong>: <i>{{ info.bracket }}</i></li>
-                              </ul>
-                              <div class="skewness-recommendations">
-                                {% if info.bracket == 'severely right-skewed' %}
-                                <br>
+              </div>
+            {% else %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                <span class="text-dark">Outliers</span>
+                <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+              </div>
+            {% endif %}
+            
+            <!-- Skewness -->
+            {% if data_quality_recommendations.get('skewness_recommendations') %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                  <span class="text-dark">Skewness</span>
+                  <div>
+                    <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#skewCollapse"
+                            aria-expanded="false" aria-controls="skewCollapse">
+                      Details
+                    </button>
+                    <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                  </div>
+                </div>
+                <div class="collapse mt-3" id="skewCollapse">
+                  <div class="card card-body">
+                    <div class="text-left mb-2">
+                      <button class="btn btn-link px-0 text-decoration-underline" type="button" data-bs-toggle="collapse" data-bs-target="#skewImpact" aria-expanded="false" aria-controls="skewImpact">
+                        When should I care about my data being skewed?
+                      </button>
+                    </div>
+                    <div class="collapse mt-2" id="skewImpact">
+                      <div class="card card-body">
+                        <p>If your dataset is skewed, it might impact your analysis or modeling in important ways:</p>
+                        <ul>
+                          <li>You’re using models that assume normally distributed data (e.g., linear regression, logistic regression, ANOVA)</li>
+                          <li>You rely on mean or standard deviation for detecting outliers or scaling</li>
+                          <li>Your dataset is small, so extreme values have more influence</li>
+                          <li>Your model’s performance is unexpectedly poor or predictions seem biased</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <hr>
+                    <p>Your dataset Skewness range: <strong>{{ data_quality_recommendations['skewness_recommendations']['skewness_range'][0]|round(2) }}</strong> (Min) to <strong>{{ data_quality_recommendations['skewness_recommendations']['skewness_range'][1]|round(2) }}</strong> (Max)</p>
+                    <p><i>Skewness indicates asymmetry in the distribution of a dataset, which can negatively impact many statistical models and machine learning algorithms that assume normality.</i></p>
+                    {% if data_quality_recommendations['skewness_recommendations'].get('skewed_columns') %}
+                      <ul class="list-unstyled">
+                        {% for col, info in data_quality_recommendations['skewness_recommendations']['skewed_columns'].items() %}
+                          {% set safe_id = col|replace(' ', '_space_')|replace('%', '_percentage_')|replace('.', '_dot_')|replace('/', '_slash_')|replace('\\', '_bslash_')|replace('(', '_obracket_')|replace(')', '_cbracket_')|replace('[', '_csqbracket_')|replace(']', '_osqbracket_') %}
+                          <li class="mb-2">
+                            <button class="btn btn-outline-dark btn-sm text-start w-100 fw-normal shadow-sm px-3 py-1 mb-2 rounded"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapseskew{{ safe_id }}"
+                                    aria-expanded="false"
+                                    aria-controls="collapseskew{{ safe_id }}">
+                              <strong>{{ col | upper }}</strong>
+                            </button>
+                            <div class="collapse mt-2" id="collapseskew{{ safe_id }}">
+                              <div class="card">
+                                <div class="card-body">
+                                  <h6><strong><u>{{ col | upper }}</u></strong></h6>
+                                  <ul>
+                                    <li><strong>Skewness</strong>: <i>{{ info.skewness|round(3) }}</i></li>
+                                    <li><strong>Tail</strong>: <i>{{ info.tail }}</i></li>
+                                    <li><strong>Classification</strong>: <i>{{ info.bracket }}</i></li>
+                                  </ul>
+                                  {% if info.bracket == 'severely right-skewed' %}
                                   <div class="alert alert-warning small">
                                     <strong>Severe Right Skew Recommendations:</strong>
                                     <ul>
                                       <li>Apply <strong>log transformation</strong> (log1p if zeros exist)</li>
                                       <li>Consider <strong>Box-Cox transformation</strong> with optimal lambda</li>
-                                      <li>For extreme cases, <strong>winsorize</strong> top 1% of values first</li>
-                                      <li>Try <strong>quantile transformation</strong> to force normal distribution</li>
-                                      <li>Consider <strong>binning</strong> extreme values into categories</li>
+                                      <li>Winsorize top 1%</li>
+                                      <li>Quantile transformation</li>
+                                      <li>Binning</li>
                                     </ul>
                                   </div>
-                                
-                                {% elif info.bracket == 'moderately right-skewed' %}
-                                <br>
+                                  {% elif info.bracket == 'moderately right-skewed' %}
                                   <div class="alert alert-info small">
                                     <strong>Moderate Right Skew Recommendations:</strong>
                                     <ul>
-                                      <li><strong>Square root transformation</strong> often works well</li>
-                                      <li><strong>Yeo-Johnson transformation</strong> for more flexibility</li>
-                                      <li><strong>Log transformation</strong> if all values are positive</li>
-                                      <li>Consider <strong>scaling</strong> after transformation</li>
+                                      <li>Square root transformation</li>
+                                      <li>Yeo-Johnson transformation</li>
+                                      <li>Log transformation if all values positive</li>
+                                      <li>Scaling after transformation</li>
                                     </ul>
                                   </div>
-                                
-                                {% elif info.bracket == 'severely left-skewed' %}
-                                <br>
+                                  {% elif info.bracket == 'severely left-skewed' %}
                                   <div class="alert alert-warning small">
                                     <strong>Severe Left Skew Recommendations:</strong>
                                     <ul>
-                                      <li>First <strong>reflect</strong> the data (max(x) + 1 - x)</li>
-                                      <li>Then apply <strong>log transformation</strong></li>
-                                      <li>Try <strong>cube root transformation</strong></li>
-                                      <li>Consider <strong>inverse transformation</strong> (1/x) if no zeros</li>
-                                      <li><strong>Non-parametric models</strong> may handle skewness better</li>
+                                      <li>Reflect the data (max(x) + 1 - x)</li>
+                                      <li>Then log transformation</li>
+                                      <li>Cube root transformation</li>
+                                      <li>Inverse transformation (1/x) if no zeros</li>
+                                      <li>Non-parametric models</li>
                                     </ul>
                                   </div>
-                                
-                                {% elif info.bracket == 'moderately left-skewed' %}
-                                <br>
+                                  {% elif info.bracket == 'moderately left-skewed' %}
                                   <div class="alert alert-info small">
                                     <strong>Moderate Left Skew Recommendations:</strong>
                                     <ul>
-                                      <li><strong>Power transformations</strong> (x², x³)</li>
-                                      <li><strong>Exponential transformation</strong> (exp(x))</li>
-                                      <li><strong>Binning</strong> may help visualize patterns</li>
-                                      <li>Consider <strong>scaling without transformation</strong></li>
+                                      <li>Power transformations (x², x³)</li>
+                                      <li>Exponential transformation (exp(x))</li>
+                                      <li>Binning</li>
+                                      <li>Scaling without transformation</li>
                                     </ul>
                                   </div>
-                                {% endif %}
-                                <div class="text-center mb-3">
-                                  <img src="data:image/png;base64,{{ info.plot }}" 
-                                       alt="Skewness plot for {{ col }}" 
-                                       class="img-fluid rounded border"
-                                       style="max-height: 300px;">
-                                  <p class="text-muted small mt-1">Visualization of skewness distribution</p>
+                                  {% endif %}
+                                  <div class="text-center mb-3">
+                                    <img src="data:image/png;base64,{{ info.plot }}"
+                                         alt="Skewness plot for {{ col }}"
+                                         class="img-fluid rounded border mx-auto d-block"
+                                         style="max-width: 100%; height: auto; max-height: 450px;">
+                                    <p class="text-muted small mt-1">Visualization of skewness distribution</p>
+                                  </div>
                                 </div>
+                              </div>
                             </div>
-                          </div>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                <span class="text-dark">Skewness</span>
+                <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+              </div>
+            {% endif %}
+            
+            <!-- Variance -->
+            {% if data_quality_recommendations.get('variance_recommendations') %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                  <span class="text-dark">Variance</span>
+                  <div>
+                    <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#varianceCollapse"
+                            aria-expanded="false" aria-controls="varianceCollapse">
+                      Details
+                    </button>
+                    <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                  </div>
+                </div>
+                <div class="collapse mt-3" id="varianceCollapse">
+                  <div class="card card-body">
+                    {% if data_quality_recommendations['variance_recommendations'].get('low_variance_numeric_columns') %}
+                    <p><strong>{{ data_quality_recommendations['variance_recommendations']['low_variance_numeric_columns'] | length }} Low Variance Numeric columns</strong> (Population variance < 0.01)</p>
+                    {% endif %}
+                    {% if data_quality_recommendations['variance_recommendations'].get('low_variance_categorical_columns') %}
+                    <p><strong>{{ data_quality_recommendations['variance_recommendations']['low_variance_categorical_columns'] | length }} Low Variance Categorical columns</strong> (Dominant Category > 85%)</p>
+                    {% endif %}
+                    {% if data_quality_recommendations['variance_recommendations'].get('low_variance_boolean_columns') %}
+                    <p><strong>{{ data_quality_recommendations['variance_recommendations']['low_variance_boolean_columns'] | length }} Low Variance Boolean columns</strong> (Dominant Label > 85%)</p>
+                    {% endif %}
+                    <p><i>Low variance in a dataset occurs when a column has very little variation in its values, which can negatively impact model performance as these features typically don't provide meaningful information for predictions.</i></p>
+                    <p style="font-size: small;">💡 <em>Tip: Remove low variance columns unless they hold specific value, like being an indicator.</em></p>
+                    {% if data_quality_recommendations['variance_recommendations'].get('low_variance_numeric_columns') %}
+                    <h6>Low Variance Numeric Columns:</h6>
+                    <ul>
+                      {% for col, variance in data_quality_recommendations['variance_recommendations']['low_variance_numeric_columns'].items() %}
+                      <li><strong>{{ col }}</strong>: Variance = {{ variance }}</li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if data_quality_recommendations['variance_recommendations'].get('low_variance_categorical_columns') %}
+                    <h6>Low Variance Categorical Columns:</h6>
+                    <ul>
+                      {% for col, stats in data_quality_recommendations['variance_recommendations']['low_variance_categorical_columns'].items() %}
+                      <li><strong>{{ col }}</strong>: "{{ stats['most_common_category'] }}" = {{ stats['percentage_of_total'] }}%</li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if data_quality_recommendations['variance_recommendations'].get('low_variance_boolean_columns') %}
+                    <h6>Low Variance Boolean Columns:</h6>
+                    <ul>
+                      {% for col, stats in data_quality_recommendations['variance_recommendations']['low_variance_boolean_columns'].items() %}
+                      <li><strong>{{ col }}</strong>: "{{ stats['dominant_value'] }}" = {{ stats['percentage_of_total'] }}%</li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                <span class="text-dark">Variance</span>
+                <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+              </div>
+            {% endif %}
+            
+            <!-- Boolean Class Distribution -->
+            {% if data_quality_recommendations.get('imbalanced_boolean_columns') %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                  <span class="text-dark">Boolean Distribution</span>
+                  <div>
+                    <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#booleanclassCollapse"
+                            aria-expanded="false" aria-controls="booleanclassCollapse">
+                      Details
+                    </button>
+                    <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                  </div>
+                </div>
+                <div class="collapse mt-3" id="booleanclassCollapse">
+                  <div class="card card-body">
+                    <p><i>Imbalanced boolean columns — where one class dominates — can lead to models ignoring minority classes and giving misleading performance metrics.</i></p>
+                    <p>Your dataset contains <strong>{{ data_quality_recommendations['imbalanced_boolean_columns'] | length }} boolean column{{ 's' if data_quality_recommendations['imbalanced_boolean_columns'] | length > 1 else '' }}</strong> with dominant values over 70%.</p>
+                    <ul>
+                      {% for col, info in data_quality_recommendations['imbalanced_boolean_columns'].items() %}
+                      <li class="mb-3">
+                        <strong>{{ col }}</strong> — Dominant: <code>{{ info.dominant_value }}</code> ({{ info.percentage_of_total }}%)
+                        <div class="mt-2">
+                          <img src="data:image/png;base64,{{ info.plot }}"
+                            alt="Class imbalance plot for {{ col }}"
+                            class="img-fluid rounded border mx-auto d-block"
+                            style="max-width: 100%; height: auto; max-height: 450px;">
                         </div>
                       </li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ Distributions appear approximately symmetric.</h5>
-          </div>
-        {% endif %}
-        
-        <!-- Variance -->
-        {% if data_quality_recommendations.get('variance_recommendations') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Low Variance Columns Detected
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#varianceCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="varianceCollapse">
-              <div class="card card-body">
-                {% if data_quality_recommendations['variance_recommendations'].get('low_variance_numeric_columns') %}
-                <p>🔴 Your dataset contains <strong>{{ data_quality_recommendations['variance_recommendations']['low_variance_numeric_columns'] | length }} Low Variance Numeric columns.</strong> <i>(Population variance < 0.01)</i></p>
-                {% endif %}
-                {% if data_quality_recommendations['variance_recommendations'].get('low_variance_categorical_columns') %}
-                <p>🟡 Your dataset contains <strong>{{ data_quality_recommendations['variance_recommendations']['low_variance_categorical_columns'] | length }} Low Variance Categorical columns.</strong> <i>(Dominant Category > 85%)</i></p>
-                {% endif %}
-                {% if data_quality_recommendations['variance_recommendations'].get('low_variance_boolean_columns') %}
-                <p>🟠 Your dataset contains <strong>{{ data_quality_recommendations['variance_recommendations']['low_variance_boolean_columns'] | length }} Low Variance Boolean columns.</strong>  <i>(Dominant Label > 85%)</i></p>
-                {% endif %}
-                <p><i>Low variance in a dataset occurs when a column has very little variation in its values, which can negatively impact model performance as these features typically don't provide meaningful information for predictions. Columns with extremely low variance may be constants or near-constants that don't contribute to distinguishing between different observations.</i></p>
-                <p style="font-size: small;">💡 <em>Tip: Consider removing low variance columns as they typically don't contribute meaningful information to models. However, first verify they're not important constants (like indicator columns).</em></p>
-                {% if data_quality_recommendations['variance_recommendations'].get('low_variance_numeric_columns') %}
-                <h6>🔴 Low Variance Numeric Columns:</h6>
-                <ul>
-                  {% for col, variance in data_quality_recommendations['variance_recommendations']['low_variance_numeric_columns'].items() %}
-                  <li><strong>{{ col }}</strong>: Variance = {{ variance }}</li>
-                  {% endfor %}
-                </ul>
-                <p style="font-size: small;">💡 <em>Tip: <strong>For numeric columns:</strong> Consider removing columns with extremely low variance unless they serve a specific purpose (like indicator columns).</em></p>
-                {% endif %}
-                {% if data_quality_recommendations['variance_recommendations'].get('low_variance_categorical_columns') %}
-                <h6>🟡 Low Variance Categorical Columns:</h6>
-                <ul>
-                  {% for col, stats in data_quality_recommendations['variance_recommendations']['low_variance_categorical_columns'].items() %}
-                  <li><strong>{{ col }}</strong>: "{{ stats['most_common_category'] }}" represents <strong>{{ stats['percentage_of_total'] }}%</strong> of values</li>
-                  {% endfor %}
-                </ul>
-                <p style="font-size: small;">💡 <em>Tip: <strong>For categorical columns:</strong> Consider collapsing rare categories or converting to a binary indicator if one category dominates.</li></em></p>
-                {% endif %}
-                {% if data_quality_recommendations['variance_recommendations'].get('low_variance_boolean_columns') %}
-                <h6>🟠 Low Variance Boolean Columns:</h6>
-                <ul>
-                  {% for col, stats in data_quality_recommendations['variance_recommendations']['low_variance_boolean_columns'].items() %}
-                  <li><strong>{{ col }}</strong>: "{{ stats['dominant_value'] }}" represents <strong>{{ stats['percentage_of_total'] }}%</strong> of values</li>
-                  {% endfor %}
-                </ul>
-                <p style="font-size: small;">💡 <em>Tip: <strong>For boolean columns:</strong> Consider removing if one value dominates (>85%) unless it's an important indicator.</li></li></em></p>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ No low variance columns detected.</h5>
-          </div>
-        {% endif %}
-        
-        <!-- Boolean Class Distribution -->
-        {% if data_quality_recommendations.get('imbalanced_boolean_columns') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ Imbalanced Boolean Classes
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#booleanclassCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="booleanclassCollapse">
-              <div class="card card-body">
-                <p><i>Imbalanced boolean columns — where one class (True/False) significantly outweighs the other — can bias machine learning models. This often leads to poor performance on the minority class and misleading overall accuracy. Models may learn to predict only the dominant class, ignoring the other entirely.</i></p>
-                <p>Your dataset contains 
-                  <strong>{{ data_quality_recommendations['imbalanced_boolean_columns'] | length }} 
-                  boolean column{{ 's' if data_quality_recommendations['imbalanced_boolean_columns'] | length > 1 else '' }}</strong> 
-                  with dominant values exceeding 70%.
-                </p>
-                <ul>
-                  {% for col, info in data_quality_recommendations['imbalanced_boolean_columns'].items() %}
-                    <li class="mb-3">
-                      <strong>{{ col }}</strong> — Dominant: 
-                      <code>{{ info.dominant_value }}</code> ({{ info.percentage_of_total }}%)
-                      <div class="mt-2">
-                        <img src="data:image/png;base64,{{ info.plot }}" 
-                             alt="Class imbalance plot for {{ col }}" 
-                             class="img-fluid" style="max-height: 75px;">
-                      </div>
-                    </li>
-                  {% endfor %}
-                </ul>
-                <p style="font-size: small;">💡 <em>Tip: Address imbalance using techniques like SMOTE, class weighting, or stratified sampling to ensure fairer and more effective modeling.</em></p>
-              </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ Balanced Boolean class distribution.</h5>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-    
-
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-3-square-fill text-primary me-2"></i>&nbsp;Feature Characteristics</h5>
-      </div>
-      <div class="card-body">
-    
-        <!-- Cardinality -->
-        {% if data_quality_recommendations.get('cardinality_recommendations') %}
-          <div class="alert alert-danger">
-            <h5>
-              ❌ High/Medium Cardinality Columns Detected
-              <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#cardinalityCollapse">Details</button>
-            </h5>
-            <div class="collapse mt-3" id="cardinalityCollapse">
-              <div class="card card-body">
-                {% if data_quality_recommendations['cardinality_recommendations'].get('high_cardinality_columns') %}
-                <p>🔴 Your dataset contains <strong>{{ data_quality_recommendations['cardinality_recommendations']['high_cardinality_columns'] | length }} High Cardinality columns.</strong></p>
-                {% endif %}
-                {% if data_quality_recommendations['cardinality_recommendations'].get('medium_cardinality_columns') %}
-                <p>🟡 Your dataset contains <strong>{{ data_quality_recommendations['cardinality_recommendations']['medium_cardinality_columns'] | length }} Medium Cardinality columns.</strong></p>
-                {% endif %}
-                <p><i>High cardinality in a dataset occurs when a column has a large number of unique values, which can lead to increased computational costs and slower model performance. It also risks overfitting, as the model may focus too heavily on rare or irrelevant values, rather than identifying generalisable patterns that contribute to more accurate predictions.
-                  One-Hot-Encoding a categorical column with High or Medium Cardinality could also have a large impact on the dimensionality of the data.
-                </i></p>
-                <p style="font-size: small;">💡 <em>Tip: Drop columns that have a high cardinality and no predictive power (e.g., IDs, URLs, or any column with random/unimportant data).</em></p>
-                {% if data_quality_recommendations['cardinality_recommendations'].get('high_cardinality_columns') %}
-                <h6>🔴 High Cardinality Columns:</h6>
-                <ul>
-                  {% for col, unique_count in data_quality_recommendations['cardinality_recommendations']['high_cardinality_columns'].items() %}
-                  <li><strong>{{ col }}</strong>: {{ unique_count }} unique values</li>
-                {% endfor %}
-                </ul>
-                  <div class="alert alert-warning small">
-                    <strong>Tips for Handling High Cardinality:</strong>
-                    <ul>
-                      <li>Consider grouping or binning rare categories to reduce the number of unique values.</li>
-                      <li>Explore feature engineering to categorise into higher level categories to reduce unique value count.</li>
-                      <li>Use <i>target encoding</i> or <i>hashing</i> to transform categorical values into numeric ones for efficient processing.</li>
-                      <li>Explore <i>dimensionality reduction</i> techniques like PCA or feature hashing to reduce feature complexity.</li>
-                      <li>Evaluate whether the column is necessary; dropping irrelevant columns could improve model performance.</li>
+                      {% endfor %}
                     </ul>
+                    <p style="font-size: small;">💡 <em>Tip: Use SMOTE, class weights, or sampling techniques to address this imbalance.</em></p>
                   </div>
-                {% endif %}
-                {% if data_quality_recommendations['cardinality_recommendations'].get('medium_cardinality_columns') %}
-                <h6>🟡 Medium Cardinality Columns:</h6>
-                <ul>
-                  {% for col, unique_count in data_quality_recommendations['cardinality_recommendations']['medium_cardinality_columns'].items() %}
-                  <li><strong>{{ col }}</strong>: {{ unique_count }} unique values</li>
-                {% endfor %}
-                </ul>
-                  <div class="alert alert-warning small">
-                    <strong>Tips for Handling Medium Cardinality:</strong>
-                    <ul>
-                      <li>Consider grouping or binning categories to consolidate similar values and reduce unique values.</li>
-                      <li>Explore feature engineering to categorise into higher level categories to reduce unique value count.</li>
-                      <li>Use <i>target encoding</i> or <i>hashing</i> to transform categorical values into numeric ones for efficient processing.</li>
-                      <li>Explore <i>dimensionality reduction</i> techniques like PCA or feature hashing to reduce feature complexity.</li>
-                      <li>Evaluate whether the column is necessary; dropping irrelevant columns could improve model performance.</li>
-                    </ul>
-                  </div>
-              </div> 
+                </div>
+              </div>
+            {% else %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                <span class="text-dark">Boolean Distribution</span>
+                <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+              </div>
             {% endif %}
-            </div>
           </div>
         </div>
-        {% else %}
-          <div class="alert alert-success">
-            <h5>✅ No high or medium cardinality columns detected.</h5>
-          </div>
-        {% endif %}
-        
-        
-        
-        <!-- Correlation -->
+    
+
         <div class="card mb-4 shadow-sm">
           <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-diagram-3-fill text-primary me-2"></i>&nbsp;Correlation</h5>
+            <h5 class="mb-0"><i class="bi bi-3-square-fill text-dark me-2"></i>&nbsp;Feature Characteristics</h5>
           </div>
           <div class="card-body">
+    
+            <!-- Cardinality -->
+            {% if data_quality_recommendations.get('cardinality_recommendations') %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                  <span class="text-dark">Cardinality</span>
+                  <div>
+                    <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#cardinalityCollapse"
+                            aria-expanded="false" aria-controls="cardinalityCollapse">
+                      Details
+                    </button>
+                    <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                  </div>
+                </div>
+                <div class="collapse mt-3" id="cardinalityCollapse">
+                  <div class="card card-body">
+                    {% if data_quality_recommendations['cardinality_recommendations'].get('high_cardinality_columns') %}
+                      <p>Your dataset contains <strong>{{ data_quality_recommendations['cardinality_recommendations']['high_cardinality_columns'] | length }} High Cardinality columns.</strong></p>
+                    {% endif %}
+                    {% if data_quality_recommendations['cardinality_recommendations'].get('medium_cardinality_columns') %}
+                      <p>Your dataset contains <strong>{{ data_quality_recommendations['cardinality_recommendations']['medium_cardinality_columns'] | length }} Medium Cardinality columns.</strong></p>
+                    {% endif %}
+                    <p><i>High cardinality in a dataset occurs when a column has a large number of unique values, which can lead to increased computational costs and slower model performance. It also risks overfitting, as the model may focus too heavily on rare or irrelevant values, rather than identifying generalisable patterns that contribute to more accurate predictions. One-Hot-Encoding a categorical column with High or Medium Cardinality could also have a large impact on the dimensionality of the data.</i></p>
+                    <p style="font-size: small;">💡 <em>Tip: Drop columns that have a high cardinality and no predictive power (e.g., IDs, URLs, or any column with random/unimportant data).</em></p>
+                    {% if data_quality_recommendations['cardinality_recommendations'].get('high_cardinality_columns') %}
+                      <h6>High Cardinality Columns:</h6>
+                      <ul>
+                        {% for col, unique_count in data_quality_recommendations['cardinality_recommendations']['high_cardinality_columns'].items() %}
+                          <li><strong>{{ col }}</strong>: {{ unique_count }} unique values</li>
+                        {% endfor %}
+                      </ul>
+                      <div class="alert alert-warning small">
+                        <strong>Tips for Handling High Cardinality:</strong>
+                        <ul>
+                          <li>Consider grouping or binning rare categories to reduce the number of unique values.</li>
+                          <li>Explore feature engineering to categorise into higher level categories to reduce unique value count.</li>
+                          <li>Use <i>target encoding</i> or <i>hashing</i> to transform categorical values into numeric ones for efficient processing.</li>
+                          <li>Explore <i>dimensionality reduction</i> techniques like PCA or feature hashing to reduce feature complexity.</li>
+                          <li>Evaluate whether the column is necessary; dropping irrelevant columns could improve model performance.</li>
+                        </ul>
+                      </div>
+                    {% endif %}
+                    {% if data_quality_recommendations['cardinality_recommendations'].get('medium_cardinality_columns') %}
+                      <h6>Medium Cardinality Columns:</h6>
+                      <ul>
+                        {% for col, unique_count in data_quality_recommendations['cardinality_recommendations']['medium_cardinality_columns'].items() %}
+                          <li><strong>{{ col }}</strong>: {{ unique_count }} unique values</li>
+                        {% endfor %}
+                      </ul>
+                      <div class="alert alert-warning small">
+                        <strong>Tips for Handling Medium Cardinality:</strong>
+                        <ul>
+                          <li>Consider grouping or binning categories to consolidate similar values and reduce unique values.</li>
+                          <li>Explore feature engineering to categorise into higher level categories to reduce unique value count.</li>
+                          <li>Use <i>target encoding</i> or <i>hashing</i> to transform categorical values into numeric ones for efficient processing.</li>
+                          <li>Explore <i>dimensionality reduction</i> techniques like PCA or feature hashing to reduce feature complexity.</li>
+                          <li>Evaluate whether the column is necessary; dropping irrelevant columns could improve model performance.</li>
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                <span class="text-dark">Cardinality</span>
+                <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
+              </div>
+            {% endif %}
+        
+        
+        
+            <!-- Correlation -->
             {% if data_quality_recommendations.get('correlation_recommendations') %}
-              <div class="alert alert-danger">
-                <h5>
-                  ❌ Correlation Detected
-                  <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#CorrelationCollapse">Details</button>
-                </h5>
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                  <span class="text-dark">Correlation</span>
+                  <div>
+                    <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#CorrelationCollapse"
+                            aria-expanded="false" aria-controls="CorrelationCollapse">
+                      Details
+                    </button>
+                    <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                  </div>
+                </div>
                 <div class="collapse mt-3" id="CorrelationCollapse">
                   <div class="card card-body">
-                    <p><i>Correlation occurs when two or more predictor variables in a dataset are highly correlated with one another — meaning they convey redundant or overlapping information. 
-                      This can negatively impact statistical models by making it difficult to determine the individual effect of each variable on the outcome, often leading to unstable coefficients and unreliable predictions.</i></p>
+                    <p><i>Correlation occurs when two or more predictor variables in a dataset are highly correlated with one another — meaning they convey redundant or overlapping information.</i></p>
                     {% if data_quality_recommendations['correlation_recommendations'].get('cramersv_sampled') and data_quality_recommendations['correlation_recommendations'].get('pearson_sampled') %}
                       <div class="alert alert-warning small">
                         <strong>⚠ Sampling Notice:</strong> Correlation checks for Cramér’s V and Pearson's were performed on a 
@@ -652,115 +702,166 @@
                   
                     {% if data_quality_recommendations['correlation_recommendations'].get('numeric_corr') %}
                       <h6><u>Dataset Correlation</u></h6>
-                      <p>🔴 {{ data_quality_recommendations['correlation_recommendations']['numeric_corr']['total_high_numeric_corr'] }} highly correlated numeric column pairs (Pearson ≥ 0.7)</p>
+                      <p>{{ data_quality_recommendations['correlation_recommendations']['numeric_corr']['total_high_numeric_corr'] }} highly correlated numeric column pairs (Pearson ≥ 0.7)</p>
                     {% endif %}
                     {% if data_quality_recommendations['correlation_recommendations'].get('categorical_corr') %}
-                      <p>🟡 {{ data_quality_recommendations['correlation_recommendations']['categorical_corr']['total_high_categorical_corr'] }} highly correlated categorical column pairs (Cramér’s V ≥ 0.7)</p>
+                      <p>{{ data_quality_recommendations['correlation_recommendations']['categorical_corr']['total_high_categorical_corr'] }} highly correlated categorical column pairs (Cramér’s V ≥ 0.7)</p>
                     {% endif %}
                   
                     {% if data_quality_recommendations['correlation_recommendations'].get('numeric_corr') %}
-                      <button class="btn btn-primary btn-sm rounded-pill shadow-sm px-4 py-2" 
-                              data-toggle="collapse" 
-                              data-target="#numeric_high_corr" 
-                              style="margin-bottom: 10px;">
-                        📊 Numeric Correlation Details
-                      </button>
-                      <div class="collapse mt-3" id="numeric_high_corr">
-                        <div class="card card-body">
-                          <div class="text-center mb-3">
-                            <img src="data:image/png;base64,{{ data_quality_recommendations['correlation_recommendations']['numeric_corr']['corr_heatmap_base64'] }}" 
-                                 alt="Correlation Heatmap"
-                                 class="img-fluid rounded border"
-                                 style="max-height: 600px;">
-                            <p class="text-muted small mt-1">Correlation heatmap of numeric variables</p>
-                          </div>
-                          <h6><strong>🔴 Highly Correlated Numeric Columns</strong></h6>
-                          <p style="font-size: small;"><strong>Format:</strong> Feature 1, Feature 2, Coefficient</p>
-                          {% for pair, corr in data_quality_recommendations['correlation_recommendations']['numeric_corr']['numeric_high_corr'].items() %}
-                            <li><strong>{{ pair }}</strong>: {{ corr }}</li>
-                          {% endfor %}
+                    <h6><strong>Numeric Correlation</strong></h6>
+                        <div class="text-center mb-3">
+                          <img src="data:image/png;base64,{{ data_quality_recommendations['correlation_recommendations']['numeric_corr']['corr_heatmap_base64'] }}" 
+                               alt="Correlation Heatmap"
+                               class="img-fluid rounded border mx-auto d-block"
+                               style="max-width: 100%; height: auto; max-height: 450px;">
+                          <p class="text-muted small mt-1">Correlation heatmap of numeric variables</p>
                         </div>
-                      </div>
+                        <div class="text-center">
+                          <h6><strong>Highly Correlated Numeric Columns</strong></h6>
+                          <p class="text-muted small"><strong>Format:</strong> Feature 1, Feature 2, Coefficient</p>
+                          <ul class="mb-0">
+                            {% for pair, corr in data_quality_recommendations['correlation_recommendations']['numeric_corr']['numeric_high_corr'].items() %}
+                              <li><strong>{{ pair }}</strong>: {{ corr }}</li>
+                            {% endfor %}
+                          </ul>
+                        </div>
                     {% endif %}
                     
                     {% if data_quality_recommendations['correlation_recommendations'].get('categorical_corr') %}
-                      <button class="btn btn-primary btn-sm rounded-pill shadow-sm px-4 py-2" 
-                              data-toggle="collapse" 
-                              data-target="#categorical_high_corr" 
-                              style="margin-bottom: 10px;">
-                        📊 Categorical Correlation Details
-                      </button>
-                      <div class="collapse mt-3" id="categorical_high_corr">
-                        <div class="card card-body">
-                          <h6><strong>🟡 Highly Correlated Categorical Columns</strong></h6>
-                          <p style="font-size: small;"><strong>Format:</strong> Feature 1, Feature 2, Statistic</p>
+                    <div class="text-center">
+                        <h6><strong>Highly Correlated Categorical Columns</strong></h6>
+                        <p class="text-muted small"><strong>Format:</strong> Feature 1, Feature 2, Statistic</p>
+                        <ul class="mb-0">
                           {% for pair, corr in data_quality_recommendations['correlation_recommendations']['categorical_corr']['categorical_high_corr'].items() %}
                             <li><strong>{{ pair }}</strong>: {{ corr }}</li>
                           {% endfor %}
-                        </div>
-                      </div>
+                        </ul>
+                    </div>
                     {% endif %}
+                    
                   </div>
                 </div>
+              </div>
             {% else %}
-              <div class="alert alert-success">
-                <h5>✅ Correlation undetected.</h5>
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                <span class="text-dark">Correlation</span>
+                <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
               </div>
             {% endif %}
-          </div>
-        </div>
 
-        
-        
-        
-        <!-- VIF -->
-        <div class="card mb-4 shadow-sm">
-          <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-diagram-3 text-primary me-2"></i>&nbsp;Variance Inflation Factor (VIF)</h5>
-          </div>
-          <div class="card-body">
+      
+            <!-- VIF -->
             {% if data_quality_recommendations.get('VIF_recommendations') %}
               {% set vif = data_quality_recommendations['VIF_recommendations'] %}
-          
+
               {% if vif.get('medium_VIF') or vif.get('high_VIF') %}
-                <div class="alert alert-danger">
-                  <h5>
-                    ❌ Variance Inflation Detected
-                    <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#VIFCollapse">Details</button>
-                  </h5>
+                <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                    <span class="text-dark">Variance Inflation Factor (VIF)</span>
+                    <div>
+                      <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                              type="button" data-bs-toggle="collapse" data-bs-target="#VIFCollapse"
+                              aria-expanded="false" aria-controls="VIFCollapse">
+                        Details
+                      </button>
+                      <span class="badge rounded-pill px-3 py-1 fs-6 bg-danger text-white">Issues</span>
+                    </div>
+                  </div>
+                  <div class="collapse mt-3" id="VIFCollapse">
+                    <div class="card card-body">
+                      <p><i>Multicollinearity was detected among your numeric features. This can make model coefficients unstable and reduce interpretability, especially in linear models.</i></p>
+                      {% if vif.get('medium_VIF') %}
+                        <h6>Medium VIF (5–10):</h6>
+                        <ul>
+                          {% for col, vif_val in vif['medium_VIF'].items() %}
+                            <li><strong>{{ col }}</strong>: VIF = {{ vif_val | round(2) }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                      {% if vif.get('high_VIF') %}
+                        <h6>High VIF (>10):</h6>
+                        <ul>
+                          {% for col, vif_val in vif['high_VIF'].items() %}
+                            <li><strong>{{ col }}</strong>: VIF = {{ vif_val | round(2) }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                      <p style="font-size: small;">
+                        💡 <em>Tip: To reduce multicollinearity, consider removing or combining highly correlated variables, or applying dimensionality reduction techniques like PCA. Regularization (e.g., Ridge regression) can also help.</em>
+                      </p>
+                      {% if vif.get('sampled') or vif.get('constant_columns_removed') or vif.get('Null_columns_removed') or vif.get('High_Null_columns_removed') or vif.get('Imputed_columns') %}
+                        <hr>
+                        <h6>🛠️ Preprocessing Steps Applied Before VIF Analysis</h6>
+                        <p>The following data cleaning steps were applied before computing VIF:</p>
+                        <ol>
+                          {% if vif.get('sampled') %}
+                            <li>Data was sampled down to 10,000 rows (random state = 42).</li>
+                          {% endif %}
+                          {% if vif.get('constant_columns_removed') %}
+                            <li>Constant columns removed:
+                              <ul>
+                                {% for col in vif['constant_columns_removed'] %}
+                                  <li><strong>{{ col }}</strong></li>
+                                {% endfor %}
+                              </ul>
+                            </li>
+                          {% endif %}
+                          {% if vif.get('Null_columns_removed') %}
+                            <li>Fully null columns removed:
+                              <ul>
+                                {% for col in vif['Null_columns_removed'] %}
+                                  <li><strong>{{ col }}</strong></li>
+                                {% endfor %}
+                              </ul>
+                            </li>
+                          {% endif %}
+                          {% if vif.get('High_Null_columns_removed') %}
+                            <li>Columns with >40% nulls removed:
+                              <ul>
+                                {% for col in vif['High_Null_columns_removed'] %}
+                                  <li><strong>{{ col }}</strong></li>
+                                {% endfor %}
+                              </ul>
+                            </li>
+                          {% endif %}
+                          {% if vif.get('Imputed_columns') %}
+                            <li>Partially null columns imputed using column mean:
+                              <ul>
+                                {% for col in vif['Imputed_columns'] %}
+                                  <li><strong>{{ col }}</strong></li>
+                                {% endfor %}
+                              </ul>
+                            </li>
+                          {% endif %}
+                        </ol>
+                      {% endif %}
+                    </div>
+                  </div>
                 </div>
-                <div class="collapse mt-3" id="VIFCollapse">
-                  <div class="card card-body">
-                    <p><i>Multicollinearity was detected among your numeric features. This can make model coefficients unstable and reduce interpretability, especially in linear models.</i></p>
-                    {% if vif.get('medium_VIF') %}
-                      <h6>🟡 Medium VIF (5–10):</h6>
-                      <ul>
-                        {% for col, vif_val in vif['medium_VIF'].items() %}
-                          <li><strong>{{ col }}</strong>: VIF = {{ vif_val | round(2) }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
-                    {% if vif.get('high_VIF') %}
-                      <h6>🔴 High VIF (>10):</h6>
-                      <ul>
-                        {% for col, vif_val in vif['high_VIF'].items() %}
-                          <li><strong>{{ col }}</strong>: VIF = {{ vif_val | round(2) }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
-                    <p style="font-size: small;">
-                      💡 <em>Tip: To reduce multicollinearity, consider removing or combining highly correlated variables, or applying dimensionality reduction techniques like PCA. Regularization (e.g., Ridge regression) can also help.</em>
-                    </p>
-                    {% if vif.get('sampled') or vif.get('constant_columns_removed') or vif.get('Null_columns_removed') or vif.get('High_Null_columns_removed') or vif.get('Imputed_columns') %}
-                      <hr>
-                      <h6>🛠️ Preprocessing Steps Applied Before VIF Analysis</h6>
-                      <p>The following data cleaning steps were applied before computing VIF:</p>
+              {% elif vif.get('numeric_column_size_error') %}
+                <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+                  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                    <span class="text-dark">Variance Inflation Factor (VIF)</span>
+                    <div>
+                      <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                              type="button" data-bs-toggle="collapse" data-bs-target="#VIF_errorCollapse"
+                              aria-expanded="false" aria-controls="VIF_errorCollapse">
+                        Details
+                      </button>
+                      <span class="badge rounded-pill px-3 py-1 fs-6 bg-warning text-white">Warning</span>
+                    </div>
+                  </div>
+                  <div class="collapse mt-3" id="VIF_errorCollapse">
+                    <div class="card card-body">
+                      <p><strong>Variance Inflation Factor Failed</strong></p>
+                      <p>Less than two numeric columns remained after preprocessing:</p>
                       <ol>
                         {% if vif.get('sampled') %}
-                          <li>Data was sampled down to 10,000 rows (random state = 42).</li>
+                          <li>Sampled to 10,000 rows.</li>
                         {% endif %}
                         {% if vif.get('constant_columns_removed') %}
-                          <li>Constant columns removed:
+                          <li>Removed constant columns:
                             <ul>
                               {% for col in vif['constant_columns_removed'] %}
                                 <li><strong>{{ col }}</strong></li>
@@ -769,7 +870,7 @@
                           </li>
                         {% endif %}
                         {% if vif.get('Null_columns_removed') %}
-                          <li>Fully null columns removed:
+                          <li>Removed fully null columns:
                             <ul>
                               {% for col in vif['Null_columns_removed'] %}
                                 <li><strong>{{ col }}</strong></li>
@@ -778,7 +879,7 @@
                           </li>
                         {% endif %}
                         {% if vif.get('High_Null_columns_removed') %}
-                          <li>Columns with >40% nulls removed:
+                          <li>Removed columns with >40% nulls:
                             <ul>
                               {% for col in vif['High_Null_columns_removed'] %}
                                 <li><strong>{{ col }}</strong></li>
@@ -787,7 +888,7 @@
                           </li>
                         {% endif %}
                         {% if vif.get('Imputed_columns') %}
-                          <li>Partially null columns imputed using column mean:
+                          <li>Imputed columns:
                             <ul>
                               {% for col in vif['Imputed_columns'] %}
                                 <li><strong>{{ col }}</strong></li>
@@ -795,145 +896,115 @@
                             </ul>
                           </li>
                         {% endif %}
+                        {% if vif.get('numeric_column_size_error') %}
+                          <li>Not enough numeric features after cleaning. Consider adding more.</li>
+                        {% endif %}
                       </ol>
-                    {% endif %}
-                  </div>
-                </div>
-              {% elif vif.get('numeric_column_size_error') %}
-                <div class="alert alert-warning">
-                  <h5>
-                    ⚠️ VIF Calculation Error
-                    <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#VIF_errorCollapse">Details</button>
-                  </h5>
-                </div>
-                <div class="collapse mt-3" id="VIF_errorCollapse">
-                  <div class="card card-body">
-                    <p><strong>Variance Inflation Factor Failed</strong></p>
-                    <p>Less than two numeric columns remained after preprocessing:</p>
-                    <ol>
-                      {% if vif.get('sampled') %}
-                        <li>Sampled to 10,000 rows.</li>
-                      {% endif %}
-                      {% if vif.get('constant_columns_removed') %}
-                        <li>Removed constant columns:
-                          <ul>
-                            {% for col in vif['constant_columns_removed'] %}
-                              <li><strong>{{ col }}</strong></li>
-                            {% endfor %}
-                          </ul>
-                        </li>
-                      {% endif %}
-                      {% if vif.get('Null_columns_removed') %}
-                        <li>Removed fully null columns:
-                          <ul>
-                            {% for col in vif['Null_columns_removed'] %}
-                              <li><strong>{{ col }}</strong></li>
-                            {% endfor %}
-                          </ul>
-                        </li>
-                      {% endif %}
-                      {% if vif.get('High_Null_columns_removed') %}
-                        <li>Removed columns with >40% nulls:
-                          <ul>
-                            {% for col in vif['High_Null_columns_removed'] %}
-                              <li><strong>{{ col }}</strong></li>
-                            {% endfor %}
-                          </ul>
-                        </li>
-                      {% endif %}
-                      {% if vif.get('Imputed_columns') %}
-                        <li>Imputed columns:
-                          <ul>
-                            {% for col in vif['Imputed_columns'] %}
-                              <li><strong>{{ col }}</strong></li>
-                            {% endfor %}
-                          </ul>
-                        </li>
-                      {% endif %}
-                      {% if vif.get('numeric_column_size_error') %}
-                        <li>Not enough numeric features after cleaning. Consider adding more.</li>
-                      {% endif %}
-                    </ol>
+                    </div>
                   </div>
                 </div>
               {% else %}
-                <div class="alert alert-success">
-                  <h5>✅ VIF undetected.</h5>
+                <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                  <span class="text-dark">Variance Inflation Factor (VIF)</span>
+                  <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
                 </div>
               {% endif %}
             {% else %}
-              <div class="alert alert-success">
-                <h5>✅ VIF undetected.</h5>
+              <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex justify-content-between align-items-center">
+                <span class="text-dark">Variance Inflation Factor (VIF)</span>
+                <span class="badge rounded-pill px-3 py-1 fs-6 bg-success text-white">Clean</span>
               </div>
             {% endif %}
           </div>
         </div>
-      </div>
     
-
       
-      
-      
-      
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-4-square-fill text-primary me-2"></i>&nbsp;Feature Engineering</h5>
-      </div>
-      <div class="card-body">
-      
-        <!-- Feature Engineering Reminder -->
-        <div class="alert alert-info">
-          <h5>
-            🔍 Feature Engineering Guidance
-            <button class="btn btn-sm btn-light float-right" data-toggle="collapse" data-target="#featureEngineeringCollapse">Details</button>
-          </h5>
-          <div class="collapse mt-3" id="featureEngineeringCollapse">
-            <div class="card card-body">
-              <h6>Remember to Feature Engineer your data!</h6>
-              <p><i>Transforming raw data into meaningful signals by understanding relationships and patterns.</i></p>
-              <div class="row">
-                <div class="col-md-6">
-                  <h6>Foundational Techniques:</h6>
-                  <ul>
-                    <li><strong>Combinations:</strong> Multiply/divide related features</li>
-                    <li><strong>Decomposition:</strong> Extract day/month/year from dates</li>
-                    <li><strong>Binning:</strong> Group continuous variables</li>
-                    <li><strong>Aggregations:</strong> Category-level statistics</li>
-                  </ul>
-                </div>
-                <div class="col-md-6">
-                  <h6>Advanced Approaches:</h6>
-                  <ul>
-                    <li><strong>Target Encoding:</strong> Encode categories by target</li>
-                    <li><strong>Feature Learning:</strong> Autoencoders/embeddings</li>
-                    <li><strong>Domain Features:</strong> Business-specific ratios</li>
-                    <li><strong>Cross-Features:</strong> Interaction terms</li>
-                  </ul>
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-4-square-fill text-dark me-2"></i>&nbsp;Feature Engineering</h5>
+          </div>
+          <div class="card-body">
+          
+            <!-- Feature Engineering Reminder -->
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3">
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                <span class="text-dark">Feature Engineering Guidance</span>
+                <div>
+                  <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3 me-2"
+                          type="button" data-bs-toggle="collapse" data-bs-target="#featureEngineeringCollapse"
+                          aria-expanded="false" aria-controls="featureEngineeringCollapse">
+                    Details
+                  </button>
+                  <span class="badge rounded-pill px-3 py-1 fs-6 bg-info text-dark">Info</span>
                 </div>
               </div>
-              <div class="alert alert-light border small mt-3">
-                <strong>Key Considerations:</strong>
-                <ul class="mb-1">
-                  <li>Prioritise interpretable features where possible</li>
-                  <li>Validate with train/test splits to avoid leakage</li>
-                  <li>Monitor feature performance in production</li>
-                  <li>Balance creativity with maintainability</li>
-                </ul>
+              <div class="collapse mt-3" id="featureEngineeringCollapse">
+                <div class="card card-body">
+                  <h6>Remember to Feature Engineer your data!</h6>
+                  <p><i>Transform raw data into meaningful signals by understanding relationships and patterns.</i></p>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <h6>Foundational Techniques:</h6>
+                      <ul>
+                        <li><strong>Combinations:</strong> Multiply/divide related features</li>
+                        <li><strong>Decomposition:</strong> Extract day/month/year from dates</li>
+                        <li><strong>Binning:</strong> Group continuous variables</li>
+                        <li><strong>Aggregations:</strong> Category-level statistics</li>
+                      </ul>
+                    </div>
+                    <div class="col-md-6">
+                      <h6>Advanced Approaches:</h6>
+                      <ul>
+                        <li><strong>Target Encoding:</strong> Encode categories by target</li>
+                        <li><strong>Feature Learning:</strong> Autoencoders/embeddings</li>
+                        <li><strong>Domain Features:</strong> Business-specific ratios</li>
+                        <li><strong>Cross-Features:</strong> Interaction terms</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="alert alert-light border small mt-3">
+                    <strong>Key Considerations:</strong>
+                    <ul class="mb-1">
+                      <li>Prioritise interpretable features where possible</li>
+                      <li>Validate with train/test splits to avoid leakage</li>
+                      <li>Monitor feature performance in production</li>
+                      <li>Balance creativity with maintainability</li>
+                    </ul>
+                  </div>
+                  <p style="font-size: small;" class="mt-2">
+                    💡 <em>Good features should make patterns obvious to simple models.</em>
+                  </p>
+                </div>
               </div>
-              <p style="font-size: small;" class="mt-2">
-                💡 <em>Good features should make patterns obvious to simple models.</em>
-              </p>
             </div>
+          
           </div>
         </div>
-      </div>
-    </div>
+
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-5-square-fill text-dark me-2"></i>&nbsp;Leave a Review</h5>
+          </div>
+          <div class="card-body">
+            <div class="border border-dark rounded bg-white shadow-sm px-3 py-2 mb-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+              <span class="text-dark">Love this tool? We'd love to hear from you.</span>
+              <button class="btn btn-sm btn-outline-dark fw-semibold rounded-pill px-3"
+                      data-bs-toggle="modal"
+                      data-bs-target="#feedbackModal">
+                Leave a Review
+              </button>
+            </div>
+            <p class="text-muted mb-0" style="font-size: small;">
+              Your feedback helps us improve and prioritize the right features. Whether it’s a suggestion, a bug report, or some love — we’d really appreciate it.
+            </p>
+          </div>
+        </div>
     
 
   <div>
     <button class="btn btn-primary rounded-pill shadow d-flex align-items-center"
             style="position: fixed; bottom: 25px; right: 25px; z-index: 1050; padding: 0.6rem 1.2rem;"
-            data-toggle="modal" data-target="#feedbackModal">
+            data-bs-toggle="modal" data-bs-target="#feedbackModal">
       <span class="mr-2">❤️</span> Love this tool?
     </button>
   </div>

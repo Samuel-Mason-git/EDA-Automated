@@ -17,6 +17,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-center pt-5 pb-5" style="padding-top: 15vh;">
   <div class="col-md-10 col-lg-8 col-xl-6">
 
@@ -24,24 +25,21 @@
     <div id="upload-form-container">
 
       <!-- Privacy Notice -->
-      <div class="alert shadow-sm px-4 py-4 mb-4 rounded-3 border-0" style="background-color: #f1f6fc; border-left: 5px solid #0d6efd;">
-        <div class="d-flex flex-column">
-          <div class="d-flex align-items-center mb-2">
-            <span class="fs-5 me-2 text-primary">🔒</span>
-            <h6 class="mb-0 fw-semibold text-dark">Privacy First</h6>
-          </div>
-          <div class="text-secondary small lh-lg ps-1">
-            <div>Your file is processed entirely in memory and never stored.</div>
-            <div>All data is cleared automatically after analysis.</div>
-            <div>We use dynamic rendering — nothing is saved to disk or database.</div>
-          </div>
+      <div class="px-4 py-4 mb-4 rounded-3 border border-secondary text-light text-center shadow-sm bg-dark">
+        <div class="mb-2 d-flex justify-content-center align-items-center gap-2">
+          <h6 class="mb-0 fw-semibold text-white">Privacy First 🔒</h6>
+        </div>
+        <div class="small">
+          <div>1. Your file is processed entirely in memory and never stored.</div>
+          <div>2. All data is cleared automatically after analysis.</div>
+          <div>3. We use dynamic rendering — nothing is saved to disk or database.</div>
         </div>
       </div>
 
       <!-- Upload Card -->
-      <div class="card shadow-lg border-0 rounded-4 bg-light">
+      <div class="card shadow-lg border border-dark-subtle rounded-4 bg-white">
         <div class="card-body p-5">
-          <h2 class="text-center mb-3 display-5">📁 Upload Your Dataset</h2>
+          <h2 class="text-center mb-4 display-6 fw-bold text-dark">📁 Upload Your Dataset</h2>
 
           <!-- File types line, cleaner -->
           <p class="text-center text-muted mb-4" style="font-size: 1rem;">
@@ -59,14 +57,27 @@
               <label for="file" class="form-label fw-semibold">Choose a file</label>
               <div class="custom-file-upload w-100">
                 <input type="file" name="file" id="file" class="form-control visually-hidden" accept=".csv,.xlsx,.xls,.json,.feather" required>
-                <label for="file" class="file-label d-flex align-items-center justify-content-between px-4 py-2 rounded border border-2 shadow-sm">
-                  <span id="file-name" class="text-muted">No file chosen</span>
-                  <span class="btn btn-sm btn-outline-primary px-3">Choose file</span>
+                <label for="file" class="file-label d-flex align-items-center justify-content-between px-4 py-2 rounded border border-dark shadow-sm bg-dark text-white gap-3"
+                  style="min-width: 0; width: 100%;">
+                  <span id="file-name"
+                        class="text-white flex-grow-1 d-block"
+                        style="
+                          white-space: nowrap;
+                          overflow-x: auto;
+                          text-overflow: ellipsis;
+                          -webkit-overflow-scrolling: touch;
+                          scrollbar-width: none;
+                          -ms-overflow-style: none;
+                        "
+                        title="No file chosen">
+                    No file chosen
+                  </span>
+                  <span class="btn btn-sm btn-outline-light fw-semibold px-3 py-1">Choose file</span>
                 </label>
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 shadow-sm">
+            <button type="submit" class="btn btn-dark w-100 fw-semibold py-2 shadow-sm rounded-3">
               🚀 Upload & Analyse
             </button>
 
@@ -81,15 +92,15 @@
       </div>
 
       <div class="text-center mt-4">
-        <button onclick="startExampleLoad()" class="btn btn-outline-primary btn-lg shadow-sm">
+        <button onclick="startExampleLoad()" class="btn btn-outline-dark fw-semibold btn-lg shadow-sm rounded-pill px-4 py-2">
           🚀 Try with Example Dataset
         </button>
       </div>
 
       <!-- How It Works Section -->
-      <div class="card mt-5 shadow-sm border-0">
+      <div class="card mt-5 shadow-sm border border-dark rounded-4">
         <div class="card-body p-4 bg-white rounded-4">
-          <h4 class="fw-bold mb-3">🧠 How It Works</h4>
+          <h4 class="fw-bold text-dark mb-4 display-6">🧠 How It Works</h4>
           <p class="text-muted mb-3">
             This app runs a full data profiling and quality audit using statistical methods — all locally in your browser session. No code, no setup, just results.
           </p>
@@ -146,13 +157,15 @@
 
 
     <!-- Loading Screen -->
-    <div id="loading-screen" class="d-none text-center py-5">
-      <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden"></span>
+      <div id="loading-screen" class="d-none d-flex flex-column justify-content-center align-items-center text-center px-3" style="min-height: 70vh;">
+        <div>
+          <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="lead fw-semibold mb-1">Processing your dataset... ⏳</p>
+          <p class="text-muted small" id="eta-text"></p>
+        </div>
       </div>
-      <p class="lead fw-semibold">Processing your dataset... ⏳</p>
-      <p class="text-muted small" id="eta-text"></p>
-    </div>
 
   </div>
 </div>
@@ -211,47 +224,73 @@
   const MAX_FILE_SIZE_BYTES = {{ max_file_size }};
   const MAX_FILE_SIZE_MB = MAX_FILE_SIZE_BYTES / (1024 * 1024);
 
-  function showLoading(file) {
-    if (file) {
-      const fileSizeMB = file.size / (1024 * 1024);
-      const processingSpeedMBps = 1.5;
-      const etaSeconds = Math.max(5, Math.ceil(fileSizeMB / processingSpeedMBps) + 30);
-      const etaMinutes = Math.round(etaSeconds / 60);
-      document.getElementById('eta-text').innerHTML = `
-        Estimated processing time: <strong>~${etaMinutes} minute${etaMinutes !== 1 ? 's' : ''}</strong><br>
-        <span class="text-muted">This estimate may vary depending on server load and dataset complexity.</span>
-      `;
+    function showLoading(file) {
+  if (file) {
+    let readableSize;
+    if (file.size < 1024 * 1024) {
+      readableSize = `${(file.size / 1024).toFixed(1)} KB`;
+    } else {
+      readableSize = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
     }
 
-    document.getElementById('upload-form-container').style.display = 'none';
-    document.getElementById('loading-screen').classList.remove('d-none');
+    const processingSpeedMBps = 1.5;
+    const etaSeconds = Math.max(5, Math.ceil((file.size / (1024 * 1024)) / processingSpeedMBps) + 30);
+    const etaMinutes = Math.round(etaSeconds / 60);
+
+    const loadingHTML = `
+      <div class="mb-2">
+        <span class="fw-semibold text-dark">📄 ${file.name}</span>
+        <span class="text-dark fw-bold">(${readableSize})</span>
+      </div>
+      <div>
+        Estimated processing time: <strong>~${etaMinutes} minute${etaMinutes !== 1 ? 's' : ''}</strong><br>
+        <span class="text-muted">This estimate may vary depending on server load and dataset complexity.</span>
+      </div>
+    `;
+
+    document.getElementById('eta-text').innerHTML = loadingHTML;
   }
+
+  document.getElementById('upload-form-container').style.display = 'none';
+  document.getElementById('loading-screen').classList.remove('d-none');
+  document.querySelector('footer').style.display = 'none';
+  document.querySelector('nav')?.classList.add('d-none');
+}
 
   document.getElementById("upload-form").addEventListener("submit", function (e) {
     const fileInput = document.getElementById("file");
     const file = fileInput.files[0];
     if (!file) return;
-
+  
     if (file.size > MAX_FILE_SIZE_BYTES) {
       e.preventDefault();
       alert(`❌ File too large! Max allowed: ${MAX_FILE_SIZE_MB}MB\nYour file: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
-
-      // 🛠 Reset button just in case
+    
       this.querySelector('button[type=submit]').disabled = false;
-
-      // 🛠 Reset the loading screen in case it briefly showed
       document.getElementById('loading-screen').classList.add('d-none');
       document.getElementById('upload-form-container').style.display = 'block';
       return false;
     }
-
+  
+    e.preventDefault(); // ✅ Stop default submit for a moment
+  
+    console.log("➡️ Submitting file:", file.name); // ✅ Debug log
     showLoading(file);
-    this.querySelector('button[type=submit]').disabled = true;
+  
+    // ✅ Submit after short delay so UI updates appear
+    setTimeout(() => {
+      this.submit();
+    }, 300);
   });
 
   document.getElementById("file").addEventListener("change", function () {
     const fileName = this.files[0] ? this.files[0].name : "No file chosen";
-    document.getElementById("file-name").textContent = fileName;
+    const maxChars = 40;
+    const displayName = fileName.length > maxChars
+      ? fileName.slice(0, maxChars - 3) + "..."
+      : fileName;
+    document.getElementById("file-name").textContent = displayName;
+    document.getElementById("file-name").title = fileName;  // Show full name on hover
   });
 
   function startExampleLoad() {
@@ -267,9 +306,13 @@
       // Show loading screen
       document.getElementById('upload-form-container').style.display = 'none';
       document.getElementById('loading-screen').classList.remove('d-none');
-      document.getElementById('eta-text').innerHTML = `
-        <span class="text-muted">Loading the example dataset...</span>
-      `;
+      document.querySelector('footer').style.display = 'none';
+      document.querySelector('nav')?.classList.add('d-none');
+      const fakeFile = {
+        name: "example_data.csv",
+        size: 65 * 1024 * 1024
+      };
+      showLoading(fakeFile);
     
       // Navigate after a brief delay
       setTimeout(() => {

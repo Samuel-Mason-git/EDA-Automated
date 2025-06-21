@@ -2,11 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <title>{% block title %}EDA Automated - Upload CSV for a Data Quality Audit{% endblock %}</title>
 
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+  <!--Stylesheet loading -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   {% block meta %}
   <meta name="description" content="Upload your dataset and get an instant data quality audit. No storage, no tracking — just smart, secure, in-browser analysis.">
@@ -28,35 +34,142 @@
   {% endblock %}
 
 
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+    color: #212529;
+  }
+
+  main {
+    flex: 1 0 auto;
+  }
+
+  footer span.text-muted {
+    font-size: 0.875rem;
+    opacity: 0.8;
+  }
+
+  .navbar-brand {
+    font-size: 1.3rem;
+  }
+
+  .nav-link {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .navbar-nav {
+    flex-wrap: nowrap;
+  }
+
+  #file-name::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 576px) {
+    .file-label {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.5rem !important;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
+    .file-label .btn {
+      width: 100%;
+    }
+  }
+
+
+  @media (min-width: 768px) and (max-width: 991.98px) {
+    .navbar-brand {
+      font-size: 1.5rem;
     }
 
-    main {
-      flex: 1 0 auto;
+    .nav-link {
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .navbar-nav .nav-link {
+      padding: 0 1rem;
+      font-size: 0.95rem;
     }
 
-    footer {
+    .navbar .btn {
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .navbar .btn + .btn {
+      margin-left: 0.5rem;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .navbar .btn {
       flex-shrink: 0;
-      margin-top: 50px;
+      white-space: nowrap;
     }
-  </style>
-  <script>
 
-    function confirmClear() {
-    const confirmed = confirm("Are you sure you want to clear the uploaded dataset and return to the upload page?");
-      if (confirmed) {
-        window.location.href = "/clear";
-      }
+
+    .modal-dialog {
+      margin: 1rem auto;
     }
-  </script>
+
+    .modal-content {
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+    }
+
+    #feedbackModal .form-control,
+    #feedbackModal .form-check-label {
+      font-size: 0.95rem;
+    }
+
+    #feedbackModal textarea {
+      min-height: 100px;
+    }
+
+    #feedbackModal .form-check-input {
+      width: 1.3em;
+      height: 1.3em;
+      margin-top: 0.2em;
+      margin-right: 0.5em;
+    }
+
+    #submit-feedback {
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .navbar .navbar-brand {
+        font-size: 1.1rem;
+        max-width: 60%;
+        flex-shrink: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .d-flex.d-lg-none.align-items-center {
+        gap: 0.25rem !important;
+    }
+    
+    .navbar .btn {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.8rem;
+    }
+  }
+</style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-44BXE020T4"></script>
 <script>
@@ -70,34 +183,44 @@
 <body>
 {% if not hide_navbar %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
-  <div class="container">
+  <div class="container px-3">
 
-    <!-- Brand / Toggle Button (visible on mobile) -->
-    <a class="navbar-brand fw-semibold" href="/">EDA Automated</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-      aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <!-- Left: Brand -->
+    <a class="navbar-brand fw-semibold me-3" href="/">EDA Automated</a>
 
-    <!-- Collapsible Section -->
-    <div class="collapse navbar-collapse justify-content-center" id="mainNavbar">
+    <!-- Mobile Buttons + Toggler (inline right of brand) -->
+    <div class="d-flex d-lg-none align-items-center ms-auto flex-nowrap gap-2">
+      {% if session.get('upload_complete') %}
+      <button class="btn btn-outline-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">🔄</button>
+      <button class="btn btn-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#feedbackModal">💬</button>
+      {% endif %}
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+
+    <!-- Collapsible Nav Links and Desktop Buttons -->
+    <div class="collapse navbar-collapse justify-content-between mt-3 mt-lg-0" id="mainNavbar">
 
       <!-- Centered Nav Links -->
-      <div class="navbar-nav mx-auto text-center">
-        <a class="nav-link text-light fw-semibold" href="/overview">📊 Dataset Overview</a>
-        <a class="nav-link text-light fw-semibold" href="/datatype-analysis">📂 Data Statistics</a>
-        <a class="nav-link text-light fw-semibold" href="/data-quality-checklist">📋 EDA Checklist</a>
-      </div>
+      <ul class="navbar-nav mx-auto text-center">
+        <li class="nav-item">
+          <a class="nav-link text-light fw-semibold px-3" href="/overview">📊 Dataset Overview</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-light fw-semibold px-3" href="/datatype-analysis">📂 Data Statistics</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-light fw-semibold px-3" href="/data-quality-checklist">📋 EDA Checklist</a>
+        </li>
+      </ul>
 
-      <!-- Right-aligned Action Buttons -->
+      <!-- Right: Desktop Buttons -->
       {% if session.get('upload_complete') %}
-      <div class="d-flex align-items-center mt-3 mt-lg-0" style="gap: 10px;">
-        <a href="#" class="btn btn-outline-light btn-sm fw-semibold shadow-sm" onclick="confirmClear()">
-          🔄 Reset
-        </a>
-        <button class="btn btn-light btn-sm fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#feedbackModal">
-          💬 Review
-        </button>
+      <div class="d-none d-lg-flex align-items-center gap-3 ms-3">
+        <button class="btn btn-outline-light btn-sm fw-semibold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">🔄 Reset</button>
+        <button class="btn btn-light btn-sm fw-semibold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#feedbackModal">💬 Review</button>
       </div>
       {% endif %}
 
@@ -110,61 +233,77 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="bg-light border-top py-3 mt-5">
-    <div class="container text-center small text-muted">
-      <span>© {{ year }} EDA Automated. Built for better data decisions.</span>
-    </div>
-  </footer>
+    <footer class="bg-dark text-light mt-auto py-4 border-0">
+      <div class="container text-center small">
+        <span class="d-block mb-1 fw-semibold">© {{ year }} EDA Automated</span>
+        <span class="text-light opacity-50">Built for better data decisions.</span>
+      </div>
+    </footer>
 
-   <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content shadow">
-        <div class="modal-header">
-          <h5 class="modal-title" id="feedbackModalLabel">📝 Leave a Review</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-
-        <div class="modal-body">
-          <div id="feedback-form">
-            <div class="form-group">
-              <label for="feedback_text">Your thoughts:</label>
-              <textarea class="form-control" id="feedback_text" rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-              <label>Rating:</label><br>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="rating" id="positive" value="positive" required>
-                <label class="form-check-label" for="positive">😊 Positive</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="rating" id="neutral" value="neutral">
-                <label class="form-check-label" for="neutral">😐 Neutral</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="rating" id="negative" value="negative">
-                <label class="form-check-label" for="negative">😞 Negative</label>
-              </div>
-            </div>
-            <button class="btn btn-primary btn-block" id="submit-feedback">Submit</button>
+    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content shadow">
+          <div class="modal-header">
+            <h5 class="modal-title" id="feedbackModalLabel">📝 Leave a Review</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-
-          <div id="thank-you-message" class="text-center d-none">
-            <div class="alert alert-info text-center py-2 mb-0" role="alert">
-              🎉 Thanks for your feedback!
+        
+          <div class="modal-body">
+            <div id="feedback-form">
+              <div class="form-group mb-3">
+                <label for="feedback_text">Your thoughts:</label>
+                <textarea class="form-control" id="feedback_text" rows="4" required></textarea>
+              </div>
+              <div class="form-group mb-3">
+                <label>Rating:</label><br>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="rating" id="positive" value="positive" required>
+                  <label class="form-check-label" for="positive">😊 Positive</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="rating" id="neutral" value="neutral">
+                  <label class="form-check-label" for="neutral">😐 Neutral</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="rating" id="negative" value="negative">
+                  <label class="form-check-label" for="negative">😞 Negative</label>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100 fw-semibold py-2" id="submit-feedback">
+                🚀 Submit Feedback
+              </button>
+            </div>
+          
+            <div id="thank-you-message" class="text-center d-none mt-3">
+              <div class="alert alert-info py-2 mb-0" role="alert">
+                🎉 Thanks for your feedback!
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Replace slim jQuery with full version -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!--Reset button-->
+    <div class="modal fade" id="resetConfirmModal" tabindex="-1" aria-labelledby="resetConfirmLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+          <div class="modal-header">
+            <h5 class="modal-title d-flex align-items-center gap-2" id="resetConfirmLabel">
+              <i class="bi bi-exclamation-triangle-fill text-warning"></i> Reset Data?
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <p class="mb-3 text-muted">Are you sure you want to clear your uploaded file and start fresh?</p>
+            <div class="d-flex justify-content-center gap-3">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <a href="/clear" class="btn btn-danger">Yes, Reset</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
   <script>
     $(document).ready(function() {

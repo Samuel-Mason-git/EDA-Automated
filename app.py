@@ -18,7 +18,9 @@ import logging
 from datetime import datetime
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -96,6 +98,7 @@ def upload_file():
             log_upload(file.filename, file_size_mb, duration)
 
             session['uploaded_file'] = file_path
+            time.sleep(3)
             return redirect(url_for('index'))
         else:
             print("❌ No file uploaded — reloading upload screen.")
@@ -196,7 +199,6 @@ if __name__ == '__main__':
     wipe_all_files_in_folder(UPLOAD_FOLDER)
     wipe_all_files_in_folder(app.config['SESSION_FILE_DIR'])
     print("✅ Cleanup complete. Starting server.")
-    serve(app, host='127.0.0.1', port=8000, max_request_body_size=10 * 1024 * 1024 * 1024)
 
 
 @app.errorhandler(404)
