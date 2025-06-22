@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}About Us | EDA Automated – Skip the Pipeline, Sip the Coffee{% endblock %}
+
+{% block meta %}
+  <meta name="description" content="We built EDA Automated so analysts can skip repetitive data profiling and enjoy a coffee instead. Learn more about our mission and team.">
+  <meta name="keywords" content="about EDA Automated, our mission, data profiling team, smart eda tool, skip preprocessing, coffee powered analytics">
+  <meta property="og:title" content="About EDA Automated – Our Mission">
+  <meta property="og:description" content="We're on a mission to eliminate the pain of data prep and let analysts get back to thinking — not fixing.">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:title" content="About EDA Automated">
+  <meta name="twitter:description" content="Skip the pipeline, sip the coffee. Learn how we built a smart, browser-based data quality audit tool.">
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .feature-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 1rem;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .feature-card:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  .section-wrap {
+    background-color: #f8f9fa;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .feature-card {
+      padding: 1.5rem 1rem;
+    }
+  }
+
+  .coffee-mug-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  padding-top: 3rem;
+}
+
+.coffee-mug-wrapper hr {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.coffee-mug {
+  position: relative;
+  width: 60px;
+  height: 80px;
+  overflow: visible;
+  background: #444;
+  border-radius: 0 0 20px 20px;
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.5);
+  margin: 0 auto;
+}
+
+.coffee-mug::before {
+  content: "";
+  position: absolute;
+  right: -14px;
+  top: 20px;
+  width: 16px;
+  height: 30px;
+  border: 4px solid #444;
+  border-radius: 50%;
+}
+
+.steam {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  width: 8px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(100, 100, 100, 0.6), transparent);
+  border-radius: 50%;
+  opacity: 0.8;
+  filter: blur(2px);
+  transform-origin: center bottom;
+  animation: steamRise 4s ease-in-out infinite;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.steam1 { left: 30%; animation-delay: 0s; }
+.steam2 { left: 40%; animation-delay: 1s; }
+.steam3 { left: 50%; animation-delay: 2s; }
+.steam4 { left: 60%; animation-delay: 3s; }
+.steam5 { left: 70%; animation-delay: 4s; }
+
+@keyframes steamRise {
+  0% {
+    transform: translate(-50%, 0) scale(1) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, -30px) scale(1.1) rotate(4deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -60px) scale(1) rotate(-3deg);
+    opacity: 0;
+  }
+}
+
+.slogan {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1rem;
+  color: #333;
+  opacity: 0.9;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+.coffee-inner {
+  position: absolute;
+  bottom: 0;
+  left: 4px;
+  right: 4px;
+  top: 4px;
+  background: transparent;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.coffee-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to top, #6f4e37, #5c3b2e);
+  animation: fillCoffee 2.8s ease-out forwards;
+  border-radius: 0 0 16px 16px;
+}
+
+@keyframes fillCoffee {
+  from { height: 0%; }
+  to { height: 90%; }
+}
+
+.coffee-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 12px;
+  background: #5c3b2e;
+  border-radius: 50% 50% 0 0;
+  animation: waveMotion 2.5s linear infinite;
+  z-index: 2;
+  opacity: 0.95;
+}
+
+@keyframes waveMotion {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+</style>
+
+<!-- Hero Section -->
+<section class="text-center py-5">
+    <div id="coffee_mug" class="coffee-mug-wrapper text-center mb-3">
+        <div class="coffee-mug">
+            <div class="coffee-inner">
+              <div class="coffee-fill">
+                  <div class="coffee-wave"></div>
+              </div>
+            </div>
+              <div class="steam steam1"></div>
+              <div class="steam steam2"></div>
+              <div class="steam steam3"></div>
+              <div class="steam steam4"></div>
+              <div class="steam steam5"></div>
+        </div>
+    </div>
+
+  <h1 class="display-5 fw-bold">Built for Analysts, Not Pipelines</h1>
+  <p class="lead mt-3 mb-3">
+    We’re on a mission to automate the boring parts of data profiling — so you can grab a coffee instead.
+  </p>
+  <hr class="mx-auto mb-4" style="width: 50%; max-width: 300px; border-top: 3px solid #212529; opacity: 0.2;">
+    <!-- App button -->
+  <div class="d-flex justify-content-center gap-3 flex-wrap">
+    <a href="/app" class="btn btn-dark btn-lg px-4 shadow">🚀 Launch the App</a>
+  </div>
+</section>
+
+<!-- Our Mission -->
+<section class="section-wrap">
+  <div class="container">
+    <div class="feature-card">
+      <h2 class="fw-bold text-center mb-1 fs-3">Our Mission</h2>
+      <section class="pt-4 pb-2">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-lg-6 order-1 text-center mb-4 mb-lg-0">
+              <img src="{{ url_for('static', filename='coffee-desk.png') }}"
+                   class="img-fluid rounded shadow"
+                   alt="Coffee and code"
+                   style="max-height: 450px;">
+            </div>
+            <div class="col-lg-6 order-2 text-center text-lg-start">
+              <p class="mb-3 fs-5">Every analyst knows the pain: messy CSVs, endless null checks, duplicated columns, a dozen plots just to find what’s broken. It’s tedious. It’s time-consuming. And it gets in the way of actual thinking.</p>
+              <p class="mb-3 fs-5">We built <strong>EDA Automated</strong> to change that. One upload, one click — and your dataset is profiled, checked, and explained, all while you refill your mug.</p>
+              <p class="text-muted small">No scripts. No notebooks. No backend servers. Just fast, local audits.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- Why We Exist -->
+<section class="section-wrap">
+  <div class="container">
+    <div class="feature-card">
+      <h2 class="fw-bold text-center mb-3 fs-3">Why We Exist</h2>
+      <section class="pt-4 pb-2">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-lg-6 order-2 order-lg-1 text-center text-lg-start">
+              <p class="mb-3 fs-5">We got tired of boilerplate. Of pulling in pandas, writing the same cell for nulls, outliers, dtypes, cardinality. Of making sure no one forgot to check for VIF or collinearity before running a model.</p>
+              <p class="mb-3 fs-5">So we asked: what if EDA wasn’t a process, but a product? What if profiling came with interpretation? What if you could hand a messy file to someone and say, “Give it 10 seconds.”</p>
+              <p class="text-muted small">That’s the kind of frictionless audit we wanted. And now — it’s yours too.</p>
+            </div>
+            <div class="col-lg-6 order-1 order-lg-2 text-center mb-4 mb-lg-0">
+              <img src="{{ url_for('static', filename='thinking-data.png') }}"
+                   class="img-fluid rounded shadow"
+                   alt="Clean analytics environment"
+                   style="max-height: 450px;">
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- Built by Analysts -->
+<section class="section-wrap">
+  <div class="container">
+    <div class="feature-card">
+      <h2 class="fw-bold text-center mb-3 fs-3">Built by Analysts, for Analysts</h2>
+      <section class="pt-4 pb-2">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-lg-6 text-center mb-4 mb-lg-0">
+              <img src="{{ url_for('static', filename='team-illustration.png') }}"
+                   class="img-fluid rounded shadow"
+                   alt="EDA Automated team illustration"
+                   style="max-height: 450px;">
+            </div>
+            <div class="col-lg-6 text-center text-lg-start">
+                <p class="mb-3 fs-5">
+                  Hi — I’m <a href="https://www.linkedin.com/in/sam-samuel-mason-446969125/" target="_blank" rel="noopener">Sam</a>, a data scientist who got tired of wasting time on the same repetitive EDA tasks. So I built this.
+                </p>
+                <p class="mb-3 fs-5">
+                  This tool isn’t meant to replace you — it’s meant to clear the sludge. You still do the thinking. It just cleans the pipes.
+                </p>
+                <p class="text-muted small">
+                  Got feedback or ideas? I’d genuinely love to hear from you — drop me a message anytime.
+                </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="py-5 bg-dark text-light border-top border-secondary">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3">Ready to Skip the Pipeline?</h2>
+    <p class="mb-4">Upload a CSV. Grab a coffee. Come back to answers.</p>
+    <a href="/app" class="btn btn-dark btn-lg px-4 shadow">🚀 Launch the App</a>
+  </div>
+</section>
+
+{% endblock %}

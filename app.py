@@ -40,7 +40,22 @@ scheduler.add_job(lambda: periodic_cleanup(UPLOAD_FOLDER, app.config['SESSION_FI
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown(wait=False))
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/")
+def landing():
+    from datetime import datetime
+    return render_template("landing.html", year=datetime.now().year, website_nav=True)
+
+@app.route("/about")
+def about():
+    from datetime import datetime
+    return render_template("about.html", year=datetime.now().year, website_nav=True)
+
+@app.route("/process")
+def how_it_works():
+    from datetime import datetime
+    return render_template("how_it_works.html", year=datetime.now().year, website_nav=True)
+
+@app.route('/app', methods=['GET', 'POST'])
 def upload_file():
     print(f"📩 Request method: {request.method}")
     if request.method == 'POST':
@@ -102,7 +117,7 @@ def upload_file():
             return redirect(url_for('index'))
         else:
             print("❌ No file uploaded — reloading upload screen.")
-    return render_template('upload.html', year=datetime.now().year, hide_navbar=True, max_file_size=max_file_size)
+    return render_template('upload.html', year=datetime.now().year, max_file_size=max_file_size, website_nav=True)
 
 @app.route('/try-example', methods=['GET'])
 def try_example():
@@ -218,10 +233,10 @@ def sitemap():
 
     # Static routes (manual list)
     static_routes = [
-        'upload_file',               
-        'overview',                  
-        'datatype_analysis',         
-        'data_quality_checklist',               
+        'upload_file',
+        'landing',
+        'about',
+        'how_it_works',                           
     ]
 
     for route in static_routes:

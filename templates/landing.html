@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Upload CSV & Get Instant Data Quality Audit | EDA Automated{% endblock %}
+
+{% block meta %}
+  <meta name="description" content="Instant CSV data profiling with smart diagnostics. Upload a file, grab a coffee, and get nulls, outliers, schema stats, and a quality checklist — all in-browser.">
+  <meta name="keywords" content="csv audit, data profiling, eda, upload csv, data checker, outlier detection, null values, schema report, data quality, in-browser analytics, no-code eda">
+  <meta property="og:title" content="Instant CSV Audit – Upload & Get a Full Report While You Brew">
+  <meta property="og:description" content="Upload a CSV file, grab a coffee, and come back to a smart report with outliers, nulls, schema checks, and a final quality checklist. Fully private, browser-based.">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:type" content="website">
+  <meta name="twitter:title" content="Upload Your CSV – Get a Smart Data Quality Audit in Seconds">
+  <meta name="twitter:description" content="Skip the code. Upload a CSV and get outlier detection, null checks, and schema stats instantly — all in-browser, no signup.">
+{% endblock %}
+
+{% block content %}
+<style>
+.feature-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem; /* reduced from 3rem 2rem */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  transition: box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.section-wrap {
+  background-color: #f8f9fa;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem; /* ← This adds space between feature boxes */
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .feature-card {
+    padding: 1.5rem 1rem; /* also reduced mobile padding */
+  }
+  }
+</style>
+
+<!-- Hero Section -->
+<section class="text-center py-5">
+  <h1 class="display-5 fw-bold">📊 Instant CSV Data Quality Reports</h1>
+  <p class="lead mt-3 mb-3">
+    Upload a file, grab a coffee, and come back to a full audit — all in your browser, no backend, no signup.
+  </p>
+
+  <!-- Decorative line -->
+  <hr class="mx-auto mb-4" style="width: 50%; max-width: 300px; border-top: 3px solid #212529; opacity: 0.2;">
+
+  <!-- GIF preview container -->
+  <div class="container px-3">
+    <img src="{{ url_for('static', filename='screens/upload.gif') }}"
+         class="img-fluid rounded shadow w-100"
+         alt="Upload your CSV and run analysis"
+         style="max-width: 880px;">
+  </div>
+
+  <!-- Speed line -->
+  <p class="fw-semibold text-muted mt-4 mb-4">
+    Takes just seconds to load your dataset and start the full analysis process.
+  </p>
+
+  <!-- App button -->
+  <div class="d-flex justify-content-center gap-3 mb-2 flex-wrap">
+    <a href="/app" class="btn btn-dark btn-lg px-4 shadow">🚀 Launch the App</a>
+  </div>
+</section>
+
+<!-- Section 1: Data Overview -->
+<section class="section-wrap border-top">
+  <div class="container">
+    <div class="feature-card">
+      <h2 class="fw-bold text-center mb-3 fs-3">1. Data Overview</h2>
+      <section class="pt-4 pb-2 border-top bg-light">
+        <div class="container">
+          <div class="row align-items-center">
+            <!-- Image First on Mobile -->
+            <div class="col-lg-6 order-1 order-lg-2 mb-4 mb-lg-0 text-center">
+              <button class="btn p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#overviewModal">
+                <img src="{{ url_for('static', filename='overview.png') }}"
+                     class="img-fluid rounded shadow"
+                     alt="Data overview preview"
+                     style="max-height: 450px;">
+              </button>
+              <p class="text-muted small mt-2">Click to view full screen</p>
+            </div>
+          
+            <!-- Text Second on Mobile -->
+            <div class="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center h-100 text-center text-lg-start">
+              <h2 class="fw-bold mb-3">High-Level Overview in Seconds</h2>
+              <p class="mb-3">Instantly see the structure and health of your dataset: rows, columns, nulls, outliers, skewness, and more — all in a scrollable dashboard.</p>
+              <ul class="list-unstyled small">
+                <li class="mb-2">📐 Rows × columns, column data types</li>
+                <li class="mb-2">⚠️ Null counts, duplicates, constants</li>
+                <li class="mb-2">📈 Outlier counts (3σ+) & skewness range</li>
+                <li class="mb-2">👀 Table preview with column names and types</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Modal -->
+      <div class="modal fade" id="overviewModal" tabindex="-1" aria-labelledby="overviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+              <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+              <img src="{{ url_for('static', filename='overview.png') }}"
+                   class="img-fluid rounded-bottom"
+                   alt="Full screen data overview">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: Data Type Analysis -->
+<section class="section-wrap">
+  <div class="container">
+    <div class="feature-card">
+      <h2 class="fw-bold text-center mb-3 fs-3">2. Datatype/Statistical Analysis</h2>
+      <section class="pt-4 pb-2 border-top bg-light">
+        <div class="container">
+          <div class="row align-items-center">
+
+            <!-- Image: First on mobile, left on desktop -->
+            <div class="col-lg-6 order-1 order-lg-1 text-center mb-4 mb-lg-0">
+              <button class="btn p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#analysisModal">
+                <img src="{{ url_for('static', filename='screens/analysis.gif') }}"
+                     class="img-fluid rounded shadow"
+                     alt="Data type stats breakdown"
+                     style="max-height: 450px;">
+              </button>
+              <p class="text-muted small mt-2">Click to view full screen</p>
+            </div>
+          
+            <!-- Text: Second on mobile, right on desktop -->
+            <div class="col-lg-6 order-2 order-lg-2 d-flex flex-column justify-content-center h-100 text-center text-lg-start">
+              <h2 class="fw-bold mb-3">Smart Per-Type Breakdown</h2>
+              <p class="mb-3">We break your dataset into numeric, categorical, and boolean types and run deep stats — no plots, just actionable structure.</p>
+              <ul class="list-unstyled small">
+                <li class="mb-2">📊 Mean, std, skew, kurtosis, min/max for numerics</li>
+                <li class="mb-2">🔢 Category counts & imbalance detection</li>
+                <li class="mb-2">🧮 Boolean distributions & missing detection</li>
+                <li class="mb-2">🔍 Outlier thresholds across σ-levels</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Modal for Data Type Analysis -->
+      <div class="modal fade" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+              <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+              <img src="{{ url_for('static', filename='screens/analysis.gif') }}"
+                   class="img-fluid rounded-bottom"
+                   alt="Full screen data type analysis preview">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 3: Checklist -->
+<section class="section-wrap">
+  <div class="container">
+    <div class="feature-card">
+      <h2 class="fw-bold text-center mb-3 fs-3">3. Quality Checklist</h2>
+      <section class="pt-4 pb-2 border-top bg-light">
+        <div class="container">
+          <div class="row align-items-center">
+
+            <!-- Text: Second on mobile, left on desktop -->
+            <div class="col-lg-6 order-2 order-lg-1 d-flex flex-column justify-content-center h-100 text-center text-lg-start">
+              <h2 class="fw-bold mb-3">Full Data Quality Checklist</h2>
+              <h6 class="text-muted">Statistical diagnostics spot problems fast — and we explain every flag.</h6>
+              <p class="mb-3">We run a full battery of automated checks to identify issues and give recommendations — no config, no fuss.</p>
+              <ul class="list-unstyled small">
+                <li class="mb-2">⚠️ <strong>Null Column Check:</strong> Flags all columns with missing values</li>
+                <li class="mb-2">📉 <strong>Class Imbalance Check:</strong> Detects dominant categories (95%+ skew)</li>
+                <li class="mb-2">🪞 <strong>Duplicate Column Check:</strong> Identifies identical feature columns</li>
+                <li class="mb-2">🔁 <strong>Duplicate Row Check:</strong> Spots repeated rows in the dataset</li>
+                <li class="mb-2">📎 <strong>Multicollinearity Check:</strong> Warns for high VIF (>10) in numeric fields</li>
+                <li class="mb-2">📈 <strong>High Correlation Check:</strong> Detects highly correlated feature pairs (> 0.95)</li>
+                <li class="mb-2">🚫 <strong>Constant Column Check:</strong> Flags columns with a single repeated value</li>
+                <li class="mb-2">🎭 <strong>High Cardinality Check:</strong> Identifies categorical columns with 50+ unique labels</li>
+                <li class="mb-2">📊 <strong>Low Variance Check:</strong> Highlights numeric columns with zero variance</li>
+              </ul>
+            </div>
+          
+            <!-- GIF: First on mobile, right on desktop -->
+            <div class="col-lg-6 order-1 order-lg-2 text-center mb-4 mb-lg-0">
+              <button class="btn p-0 border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#checklistModal">
+                <img src="{{ url_for('static', filename='screens/checklist.gif') }}"
+                     class="img-fluid rounded shadow"
+                     alt="Automated data quality checklist"
+                     style="max-height: 450px;">
+              </button>
+              <p class="text-muted small mt-2">Click to view full screen</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Modal for Checklist GIF -->
+      <div class="modal fade" id="checklistModal" tabindex="-1" aria-labelledby="checklistModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+              <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center">
+              <img src="{{ url_for('static', filename='screens/checklist.gif') }}"
+                   class="img-fluid rounded-bottom"
+                   alt="Full screen checklist preview">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="py-5 bg-dark text-light border-top border-secondary">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3">Audit While You Brew</h2>
+    <p class="mb-4">Start a full audit now. It runs in-browser, takes seconds, and tells you exactly what’s wrong — while you sip your coffee.</p>
+    <a href="/app" class="btn btn-dark btn-lg px-4 shadow">🚀 Launch the App</a>
+  </div>
+</section>
+
+{% endblock %}

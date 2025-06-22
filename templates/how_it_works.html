@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}How It Works | Data Quality Profiler{% endblock %}
+
+{% block meta %}
+  <meta name="description" content="See how our Flask-based app delivers a full data profiling audit in seconds. Learn how each stage of the process works: from upload to diagnostics, stats, and recommendations.">
+  <meta name="keywords" content="how it works, data quality, data profiling, EDA pipeline, outliers, nulls, Flask app, data audit">
+{% endblock %}
+
+{% block content %}
+<section class="section-wrap py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h1 class="fw-bold">How It Works</h1>
+      <p class="lead text-muted">An end-to-end Flask pipeline that automates your first hour of EDA — with real code and real stats, built for analysts who care about trust.</p>
+    </div>
+
+    <div class="feature-card mb-4">
+      <h2 class="fw-bold mb-3">Step 1: Upload & Load</h2>
+      <p>We support CSV, Excel, JSON, and Feather formats. Your file is handled securely and converted into a Pandas DataFrame using our custom function <code>load_dataframe()</code>, which dynamically detects format and prevents memory issues via smart fallback logic.</p>
+    </div>
+
+    <div class="feature-card mb-4">
+      <h2 class="fw-bold mb-3">Step 2: Data Profiling</h2>
+      <p>The core profiling is handled by our custom function <code>data_quality_check()</code>. This performs a deep classification and statistical summary for every column:</p>
+      <ul>
+        <li>🔢 <strong>Numerics:</strong> mean, std, skew, kurtosis, variance, outliers (3σ–5σ)</li>
+        <li>🧮 <strong>Booleans:</strong> distribution, imbalance (≥70%)</li>
+        <li>🕒 <strong>Datetimes:</strong> flexible parsing, monotonic checks, time spans</li>
+        <li>🔠 <strong>Categoricals:</strong> mode, value counts, cardinality flags</li>
+        <li>🚫 <strong>Constants/Null Columns:</strong> flagged early for pipeline hygiene</li>
+      </ul>
+      <p>We also handle edge cases like 1-unique-value features, implicit booleans, and messy time columns via <code>check_timeseries()</code>.</p>
+    </div>
+
+    <div class="feature-card mb-4">
+      <h2 class="fw-bold mb-3">Step 3: Statistical Overview</h2>
+      <p>Next, we build a bird’s-eye view using <code>overview()</code>. This aggregates key metrics across the dataset:</p>
+      <ul>
+        <li>📐 Data shape, column names, column type counts</li>
+        <li>📉 Nulls, duplicates, low-variance, high-cardinality flags</li>
+        <li>📈 Skewness and kurtosis distributions</li>
+        <li>🚩 Outlier count by σ-bracket, including graphical output via Matplotlib</li>
+      </ul>
+    </div>
+
+    <div class="feature-card mb-4">
+      <h2 class="fw-bold mb-3">Step 4: Recommendations Engine</h2>
+      <p>Here’s where things get opinionated. Our custom engine <code>data_quality_recommendations()</code> reviews all stats and triggers warnings & suggestions in structured categories:</p>
+      <ul>
+        <li>⚠️ <strong>Missingness:</strong> 30%+ null warnings, full-null column drop alerts</li>
+        <li>🪞 <strong>Duplicates:</strong> exact row matches flagged</li>
+        <li>🚫 <strong>Constant Columns:</strong> fully repeated values</li>
+        <li>📈 <strong>Outliers:</strong> flagged at 3σ–5σ with encoded plots via <code>generate_outlier_plot()</code></li>
+        <li>🎯 <strong>Skewness:</strong> classified by tail and severity via <code>generate_skewness_plot()</code></li>
+        <li>🎭 <strong>Cardinality:</strong> high (>50) or medium (12–49) categorical uniqueness</li>
+        <li>📉 <strong>Variance:</strong> low numeric variance, boolean imbalance, dominant categories</li>
+        <li>🔗 <strong>Correlation:</strong> Pearson heatmap + Cramér's V for categorical pairs</li>
+        <li>📎 <strong>Multicollinearity:</strong> VIF analysis with pre-cleaning logic for nulls & constants</li>
+      </ul>
+    </div>
+
+    <div class="feature-card mb-4">
+      <h2 class="fw-bold mb-3">Step 5: Output & Cleaning</h2>
+      <p>Everything is encoded for front-end use via <code>convert_numpy()</code> — even complex stats and plots are serialized to JSON-safe formats. Session outputs and files are cleaned hourly via <code>periodic_cleanup()</code> using <code>wipe_all_files_in_folder()</code> for both user uploads and intermediate results.</p>
+    </div>
+
+    <div class="feature-card mb-4">
+      <h2 class="fw-bold mb-3">Framework & Stack</h2>
+      <p>Everything runs inside a secure <strong>Flask</strong> app using:</p>
+      <ul>
+        <li>📦 <strong>Pandas / NumPy:</strong> Data wrangling and math</li>
+        <li>📊 <strong>Seaborn / Matplotlib:</strong> Diagnostic plots</li>
+        <li>📐 <strong>Scipy / StatsModels:</strong> Z-scores, VIF, statistical tests</li>
+        <li>🖼️ <strong>Bootstrap 5 + Jinja2:</strong> Fully styled templates and modals</li>
+      </ul>
+      <p>Designed with mobile users in mind and structured to run securely in the browser (server-side only, no data leaves your machine).</p>
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="/app" class="btn btn-dark btn-lg px-4 shadow">🚀 Try it on your dataset</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

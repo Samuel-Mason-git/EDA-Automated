@@ -169,6 +169,12 @@
         font-size: 0.8rem;
     }
   }
+
+  @media (min-width: 992px) {
+  #webNavbar {
+    display: none !important;
+  }
+}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-44BXE020T4"></script>
@@ -185,45 +191,97 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
   <div class="container px-3">
 
-    <!-- Left: Brand -->
-    <a class="navbar-brand fw-semibold me-3" href="/">EDA Automated</a>
-
-    <!-- Mobile Buttons + Toggler (inline right of brand) -->
-    <div class="d-flex d-lg-none align-items-center ms-auto flex-nowrap gap-2">
-      {% if session.get('upload_complete') %}
-      <button class="btn btn-outline-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">🔄</button>
-      <button class="btn btn-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#feedbackModal">💬</button>
-      {% endif %}
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-    </div>
-
-    <!-- Collapsible Nav Links and Desktop Buttons -->
-    <div class="collapse navbar-collapse justify-content-between mt-3 mt-lg-0" id="mainNavbar">
-
-      <!-- Centered Nav Links -->
-      <ul class="navbar-nav mx-auto text-center">
-        <li class="nav-item">
-          <a class="nav-link text-light fw-semibold px-3" href="/overview">📊 Dataset Overview</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-light fw-semibold px-3" href="/datatype-analysis">📂 Data Statistics</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-light fw-semibold px-3" href="/data-quality-checklist">📋 EDA Checklist</a>
-        </li>
-      </ul>
-
-      <!-- Right: Desktop Buttons -->
-      {% if session.get('upload_complete') %}
-      <div class="d-none d-lg-flex align-items-center gap-3 ms-3">
-        <button class="btn btn-outline-light btn-sm fw-semibold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">🔄 Reset</button>
-        <button class="btn btn-light btn-sm fw-semibold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#feedbackModal">💬 Review</button>
+    {% if website_nav %}
+      <!-- Navbar main row -->
+      <div class="d-flex align-items-center justify-content-between w-100">
+        <!-- Left: Brand -->
+        <a class="navbar-brand fw-semibold me-3" href="/">EDA Automated</a>
+      
+        <!-- Center: Desktop nav links -->
+        <div class="d-none d-lg-block position-absolute start-50 translate-middle-x">
+          <ul class="navbar-nav flex-row">
+            <li class="nav-item">
+              <a class="nav-link text-light fw-semibold px-3" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light fw-semibold px-3" href="/about">About Us</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light fw-semibold px-3" href="/process">How it works</a>
+            </li>
+          </ul>
+        </div>
+      
+        <!-- Right: Desktop + Mobile buttons + toggler -->
+        <div class="d-flex align-items-center ms-auto gap-2">
+          <!-- Desktop Try App button -->
+          <a href="/app" class="btn btn-light btn-sm fw-semibold d-none d-lg-inline-block px-3 py-1">🚀 Try App</a>
+        
+          <!-- Mobile Try App button -->
+          <a href="/app" class="btn btn-light btn-sm fw-semibold d-lg-none px-3 py-1" style="min-width: 50px; line-height: 2;">🚀</a>
+        
+          <!-- Mobile navbar toggler -->
+          <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#webNavbar"
+            aria-controls="webNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
       </div>
-      {% endif %}
+    
+      <!-- Mobile dropdown menu (must be outside the flex wrapper) -->
+      <div class="collapse navbar-collapse d-lg-none mt-2" id="webNavbar">
+        <ul class="navbar-nav text-center w-100">
+          <li class="nav-item">
+            <a class="nav-link text-light fw-semibold px-3" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light fw-semibold px-3" href="/about">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light fw-semibold px-3" href="/process">How it works</a>
+          </li>
+        </ul>
+      </div>
+    {% else %}
+            <!-- Left: Brand -->
+        <a class="navbar-brand fw-semibold me-3" href="/">EDA Automated</a>
 
+        <!-- Mobile Buttons + Toggler (inline right of brand) -->
+        <div class="d-flex d-lg-none align-items-center ms-auto flex-nowrap gap-2">
+          {% if session.get('upload_complete') %}
+          <button class="btn btn-outline-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">🔄</button>
+          <button class="btn btn-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#feedbackModal">💬</button>
+          {% endif %}
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+      
+        <!-- Collapsible Nav Links and Desktop Buttons -->
+        <div class="collapse navbar-collapse justify-content-between mt-3 mt-lg-0" id="mainNavbar">
+        
+          <!-- Centered Nav Links -->
+          <ul class="navbar-nav mx-auto text-center">
+            <li class="nav-item">
+              <a class="nav-link text-light fw-semibold px-3" href="/overview">📊 Dataset Overview</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light fw-semibold px-3" href="/datatype-analysis">📂 Data Statistics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light fw-semibold px-3" href="/data-quality-checklist">📋 EDA Checklist</a>
+            </li>
+          </ul>
+        
+          <!-- Right: Desktop Buttons -->
+          {% if session.get('upload_complete') %}
+          <div class="d-none d-lg-flex align-items-center gap-3 ms-3">
+            <button class="btn btn-outline-light btn-sm fw-semibold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">🔄 Reset</button>
+            <button class="btn btn-light btn-sm fw-semibold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#feedbackModal">💬 Review</button>
+          </div>
+          {% endif %}
+    {% endif %}
     </div>
   </div>
 </nav>
