@@ -458,6 +458,12 @@
     }
   
     e.preventDefault(); // ✅ Stop default submit for a moment
+
+    gtag('event', 'upload_file', {
+        event_category: 'engagement',
+        event_label: file.name,
+        value: file.size
+    });
   
     console.log("➡️ Submitting file:", file.name); // ✅ Debug log
     showLoading(file);
