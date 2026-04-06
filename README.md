@@ -79,5 +79,3 @@ Waitress listens on `8000`. Adjust env vars in `docker-compose.yml` for your DB/
 - Auth + per-tenant storage backends (S3/Supabase Storage).
 - Frontend polish and dark mode toggle.
 
-## License
-Pending selection by the project owner. Add your preferred OSS license before open-sourcing.
